@@ -1,30 +1,34 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Mic, Square, Paperclip, Image, FileUp, FileText } from 'lucide-react';
-import { useChat } from '@/context/ChatContext';
+import { useChat } from '@/context/chat/ChatProvider';
 import { Attachment } from '@/hooks/useAttachments';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useKnowledgeBase, KnowledgeFile } from '@/hooks/useKnowledgeBase';
+import AttachmentThumbnails from './AttachmentThumbnails';
 
 interface ChatInputProps {
   attachments?: Attachment[];
   onAddAttachment?: (attachment: Omit<Attachment, 'id'>) => string;
   onClearAttachments?: () => void;
+  onRemoveAttachment?: (id: string) => void;
 }
 
 const ChatInput: React.FC<ChatInputProps> = ({ 
   attachments = [], 
   onAddAttachment,
-  onClearAttachments
+  onClearAttachments,
+  onRemoveAttachment
 }) => {
   const { sendMessage, isMicActive, toggleMic, isLoggedIn, login, isStreaming, stopGeneration } = useChat();
   const [message, setMessage] = useState('');
   const [showKnowledgeBase, setShowKnowledgeBase] = useState(false);
   const [cursorPosition, setCursorPosition] = useState(0);
-  const [knowledgeFiles, setKnowledgeFiles] = useState<{name: string, content: string}[]>([]);
   const [activeKnowledgeFiles, setActiveKnowledgeFiles] = useState<string[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isMobile = useIsMobile();
+  const { knowledgeFiles } = useKnowledgeBase();
 
   // Auto resize textarea
   useEffect(() => {
@@ -34,25 +38,18 @@ const ChatInput: React.FC<ChatInputProps> = ({
     }
   }, [message]);
 
-  // Load knowledge base files from localStorage
+  // Listen to speech recognition events
   useEffect(() => {
-    try {
-      const savedFiles = localStorage.getItem('knowledge-base-files');
-      if (savedFiles) {
-        setKnowledgeFiles(JSON.parse(savedFiles));
-      } else {
-        // Add some example files for testing
-        const exampleFiles = [
-          { name: 'example1.txt', content: 'This is example 1 content' },
-          { name: 'example2.txt', content: 'This is example 2 content' },
-          { name: 'notes.txt', content: 'These are some important notes' }
-        ];
-        localStorage.setItem('knowledge-base-files', JSON.stringify(exampleFiles));
-        setKnowledgeFiles(exampleFiles);
-      }
-    } catch (error) {
-      console.error('Error loading knowledge base files:', error);
-    }
+    const handleSpeechTranscript = (event: Event) => {
+      const customEvent = event as CustomEvent<{ transcript: string }>;
+      setMessage(customEvent.detail.transcript);
+    };
+    
+    document.addEventListener('speech-transcript', handleSpeechTranscript);
+    
+    return () => {
+      document.removeEventListener('speech-transcript', handleSpeechTranscript);
+    };
   }, []);
 
   const handleSendMessage = () => {
@@ -136,6 +133,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
         </button>
       )}
 
+      {/* Display active knowledge base files */}
       {activeKnowledgeFiles.length > 0 && (
         <div className="mb-2 flex flex-wrap gap-1">
           {activeKnowledgeFiles.map((file, index) => (
@@ -151,6 +149,15 @@ const ChatInput: React.FC<ChatInputProps> = ({
             </div>
           ))}
         </div>
+      )}
+      
+      {/* Display attachment thumbnails */}
+      {attachments.length > 0 && (
+        <AttachmentThumbnails 
+          attachments={attachments} 
+          onRemove={id => onRemoveAttachment?.(id)}
+          onPreview={() => {}} // Preview is handled within the component
+        />
       )}
 
       <div className="relative flex items-end bg-white border border-gray-200 rounded-lg shadow-sm">

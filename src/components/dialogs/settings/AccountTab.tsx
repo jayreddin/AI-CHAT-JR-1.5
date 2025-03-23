@@ -1,13 +1,12 @@
 
 import React, { useState } from 'react';
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { User, Upload, X } from "lucide-react";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { User, X } from 'lucide-react';
 import { AppSettings } from '@/hooks/useSettings';
-import { toast } from 'sonner';
 
 interface AccountTabProps {
   settings: AppSettings;
@@ -24,168 +23,149 @@ export const AccountTab: React.FC<AccountTabProps> = ({ settings, setSettings })
       reader.onload = () => {
         const result = reader.result as string;
         setAvatarPreview(result);
-        setSettings(prev => ({
-          ...prev,
+        setSettings({
+          ...settings,
           account: {
-            ...prev.account,
+            ...settings.account,
             avatar: result
           }
-        }));
+        });
       };
       reader.readAsDataURL(file);
     }
   };
-
+  
   const clearAvatar = () => {
     setAvatarPreview(null);
-    setSettings(prev => ({
-      ...prev,
+    setSettings({
+      ...settings,
       account: {
-        ...prev.account,
+        ...settings.account,
         avatar: null
       }
-    }));
+    });
   };
-
-  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSettings(prev => ({
-      ...prev,
-      account: {
-        ...prev.account,
-        username: e.target.value
-      }
-    }));
-  };
-
-  const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSettings(prev => ({
-      ...prev,
-      account: {
-        ...prev.account,
-        location: e.target.value
-      }
-    }));
-  };
-
-  const handleDateFormatChange = (value: string) => {
-    setSettings(prev => ({
-      ...prev,
-      account: {
-        ...prev.account,
-        dateFormat: value
-      }
-    }));
-  };
-
-  const handleTimeFormatChange = (value: string) => {
-    setSettings(prev => ({
-      ...prev,
-      account: {
-        ...prev.account,
-        timeFormat: value
-      }
-    }));
-  };
-
+  
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-medium">Account Settings</h3>
-      
-      {/* Avatar upload */}
-      <div className="flex flex-col items-center space-y-3">
-        <div className="relative">
-          <Avatar className="h-24 w-24">
-            {avatarPreview ? (
-              <AvatarImage src={avatarPreview} alt="User avatar" />
-            ) : (
-              <AvatarFallback className="bg-primary/10">
-                <User size={40} className="text-primary" />
+      <div className="space-y-2">
+        <Label>Profile Picture</Label>
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <Avatar className="w-16 h-16 border">
+              <AvatarImage src={avatarPreview || undefined} />
+              <AvatarFallback>
+                <User />
               </AvatarFallback>
+            </Avatar>
+            {avatarPreview && (
+              <button 
+                onClick={clearAvatar}
+                className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5"
+              >
+                <X size={12} />
+              </button>
             )}
-          </Avatar>
-          
-          {avatarPreview && (
-            <button 
-              onClick={clearAvatar}
-              className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors"
-            >
-              <X size={14} />
-            </button>
-          )}
-        </div>
-        
-        <div>
-          <Label htmlFor="avatar-upload" className="cursor-pointer">
-            <div className="flex items-center gap-1 text-sm text-primary hover:underline">
-              <Upload size={14} />
-              <span>Upload avatar</span>
-            </div>
-          </Label>
-          <Input 
-            id="avatar-upload" 
-            type="file"
-            accept="image/*"
-            onChange={handleAvatarUpload}
-            className="hidden"
-          />
+          </div>
+          <div>
+            <Input 
+              type="file" 
+              id="avatar-upload"
+              className="w-full max-w-xs"
+              accept="image/*"
+              onChange={handleAvatarUpload}
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Recommended: Square image, 500x500px or larger
+            </p>
+          </div>
         </div>
       </div>
       
-      {/* Username */}
       <div className="space-y-2">
         <Label htmlFor="username">Username</Label>
         <Input 
           id="username" 
-          placeholder="Your username"
-          value={settings.account.username}
-          onChange={handleUsernameChange}
+          value={settings.account.username} 
+          onChange={(e) => setSettings({
+            ...settings,
+            account: {
+              ...settings.account,
+              username: e.target.value
+            }
+          })}
+          placeholder="Your display name"
         />
       </div>
       
-      {/* Location */}
       <div className="space-y-2">
         <Label htmlFor="location">Location</Label>
         <Input 
           id="location" 
-          placeholder="Your location"
-          value={settings.account.location}
-          onChange={handleLocationChange}
+          value={settings.account.location} 
+          onChange={(e) => setSettings({
+            ...settings,
+            account: {
+              ...settings.account,
+              location: e.target.value
+            }
+          })}
+          placeholder="Your location (optional)"
         />
       </div>
       
-      {/* Date Format */}
-      <div className="space-y-2">
-        <Label htmlFor="date-format">Date Format</Label>
-        <Select 
-          value={settings.account.dateFormat} 
-          onValueChange={handleDateFormatChange}
-        >
-          <SelectTrigger id="date-format">
-            <SelectValue placeholder="Select date format" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="MM/DD/YYYY">MM/DD/YYYY</SelectItem>
-            <SelectItem value="DD/MM/YYYY">DD/MM/YYYY</SelectItem>
-            <SelectItem value="YYYY-MM-DD">YYYY-MM-DD</SelectItem>
-          </SelectContent>
-        </Select>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="date-format">Date Format</Label>
+          <Select 
+            value={settings.account.dateFormat}
+            onValueChange={(value) => setSettings({
+              ...settings,
+              account: {
+                ...settings.account,
+                dateFormat: value
+              }
+            })}
+          >
+            <SelectTrigger id="date-format">
+              <SelectValue placeholder="Select date format" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="MM/DD/YYYY">MM/DD/YYYY</SelectItem>
+              <SelectItem value="DD/MM/YYYY">DD/MM/YYYY</SelectItem>
+              <SelectItem value="YYYY-MM-DD">YYYY-MM-DD</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="time-format">Time Format</Label>
+          <Select 
+            value={settings.account.timeFormat}
+            onValueChange={(value) => setSettings({
+              ...settings,
+              account: {
+                ...settings.account,
+                timeFormat: value
+              }
+            })}
+          >
+            <SelectTrigger id="time-format">
+              <SelectValue placeholder="Select time format" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="12h">12-hour (AM/PM)</SelectItem>
+              <SelectItem value="24h">24-hour</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
       
-      {/* Time Format */}
-      <div className="space-y-2">
-        <Label htmlFor="time-format">Time Format</Label>
-        <Select 
-          value={settings.account.timeFormat} 
-          onValueChange={handleTimeFormatChange}
-        >
-          <SelectTrigger id="time-format">
-            <SelectValue placeholder="Select time format" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="12h">12-hour (AM/PM)</SelectItem>
-            <SelectItem value="24h">24-hour</SelectItem>
-          </SelectContent>
-        </Select>
+      <div className="pt-4">
+        <p className="text-sm text-muted-foreground">
+          Account settings are stored locally. In a production app, these would 
+          sync with a server.
+        </p>
       </div>
     </div>
   );

@@ -5,7 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Upload, X, History } from "lucide-react";
+import { Upload, History } from "lucide-react";
+import { UploadHistoryList } from "./uploads/UploadHistoryList";
+import { UploadPreview } from "./uploads/UploadPreview";
+import { loadFromStorage, saveToStorage } from "@/utils/storage";
 
 interface ImageUploadDialogProps {
   open: boolean;
@@ -18,6 +21,8 @@ interface ImageHistoryItem {
   isBase64: boolean;
   timestamp: number;
 }
+
+const STORAGE_KEY = 'image-upload-history';
 
 export function ImageUploadDialog({ 
   open, 
@@ -33,14 +38,8 @@ export function ImageUploadDialog({
   // Load image history from localStorage
   useEffect(() => {
     if (open) {
-      try {
-        const history = localStorage.getItem('image-upload-history');
-        if (history) {
-          setImageHistory(JSON.parse(history));
-        }
-      } catch (error) {
-        console.error("Error loading image history:", error);
-      }
+      const history = loadFromStorage<ImageHistoryItem[]>(STORAGE_KEY, []);
+      setImageHistory(history);
     }
   }, [open]);
 
@@ -72,11 +71,11 @@ export function ImageUploadDialog({
         timestamp: Date.now() 
       };
       
-      const updatedHistory = [...imageHistory, newHistoryItem];
+      const updatedHistory = [newHistoryItem, ...imageHistory].slice(0, 30); // Limit history to 30 items
       setImageHistory(updatedHistory);
       
       // Save to localStorage
-      localStorage.setItem('image-upload-history', JSON.stringify(updatedHistory));
+      saveToStorage(STORAGE_KEY, updatedHistory);
       
       // Reset and close
       onOpenChange(false);
@@ -145,61 +144,21 @@ export function ImageUploadDialog({
           </div>
           
           {selectedImage && (
-            <div className="relative">
-              <button 
-                onClick={clearSelection}
-                className="absolute top-2 right-2 bg-black/50 text-white p-1 rounded-full hover:bg-black/70 transition-colors"
-              >
-                <X size={16} />
-              </button>
-              <img 
-                src={selectedImage} 
-                alt="Selected" 
-                className="max-h-[200px] rounded-md mx-auto"
-              />
-            </div>
+            <UploadPreview 
+              type="image"
+              content={selectedImage}
+              onClear={clearSelection}
+              isBase64={isBase64}
+            />
           )}
         </div>
       ) : (
-        <div className="space-y-3">
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => setShowHistory(false)}
-          >
-            Back to Upload
-          </Button>
-          
-          <div className="grid grid-cols-3 gap-2 max-h-[300px] overflow-y-auto">
-            {imageHistory.length === 0 ? (
-              <p className="text-center text-muted-foreground p-4 col-span-3">
-                No image history found
-              </p>
-            ) : (
-              imageHistory.map((item, i) => (
-                <div 
-                  key={i} 
-                  className="relative cursor-pointer group"
-                  onClick={() => selectFromHistory(item)}
-                >
-                  <img 
-                    src={item.content} 
-                    alt={`History item ${i}`} 
-                    className="h-24 w-full object-cover rounded border border-gray-200"
-                  />
-                  {item.isBase64 && (
-                    <div className="absolute top-0 left-0 bg-blue-500 text-white text-[8px] px-1 py-0.5">
-                      B64
-                    </div>
-                  )}
-                  <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {new Date(item.timestamp).toLocaleDateString()}
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
+        <UploadHistoryList 
+          items={imageHistory}
+          onSelect={(item) => selectFromHistory(item as ImageHistoryItem)}
+          onBack={() => setShowHistory(false)}
+          type="image"
+        />
       )}
     </DialogForm>
   );

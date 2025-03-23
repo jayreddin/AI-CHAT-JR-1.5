@@ -55,3 +55,67 @@ body {
   width: 100%;
   justify-content: center;
 }
+
+/* Model selector styling */
+.model-selector-trigger {
+  text-align: center;
+  border: none;
+  box-shadow: none;
+  background: transparent;
+}
+
+.model-selector-trigger .SelectValue {
+  width: 100%;
+  text-align: center;
+  display: block;
+}
+
+.model-selector-content {
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.model-selector-item {
+  text-align: center;
+}
+
+/* QR Code scanner */
+.qr-code-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 250px;
+  margin: 0 auto;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+/* Mobile optimizations */
+@media (max-width: 640px) {
+  .toolbar-icons {
+    transform: scale(0.9);
+    gap: 0.5rem !important;
+  }
+  
+  .header-compact {
+    padding: 0.5rem;
+  }
+  
+  .streaming-switch-mobile {
+    position: absolute;
+    right: 60px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+  }
+  
+  .streaming-switch-mobile span {
+    display: none;
+  }
+}

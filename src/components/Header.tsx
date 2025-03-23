@@ -2,38 +2,42 @@
 import React, { useState, useEffect } from 'react';
 import { UserCheck, User, QrCode, Server, Settings as SettingsIcon } from 'lucide-react';
 import ModelSelector from './ModelSelector';
-import { useChat } from '@/context/ChatContext';
+import { useChat } from '@/context/chat/ChatProvider';
 import { Switch } from "@/components/ui/switch";
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { loadFromStorage } from '@/utils/storage';
 
 const Header: React.FC = () => {
   const { isLoggedIn, login, logout, streamingEnabled, toggleStreamingMode } = useChat();
   const isMobile = useIsMobile();
   const [showMobileSettings, setShowMobileSettings] = useState(false);
   const [serverActive, setServerActive] = useState(false);
-  const serverUrl = "https://jr-ai-chat.example.com/mobile-server";
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
+  const [serverQrCode, setServerQrCode] = useState<string>('');
+  const serverUrl = window.location.href;
+  
+  // Generate QR code
+  useEffect(() => {
+    if (showMobileSettings && serverActive) {
+      // Generate QR code - in a real implementation, use a QR code library
+      // For now, we'll just use a placeholder
+      setServerQrCode(`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(serverUrl)}`);
+    }
+  }, [showMobileSettings, serverActive, serverUrl]);
   
   // Load user avatar from settings
   useEffect(() => {
-    try {
-      const settings = localStorage.getItem('ai-chat-settings');
-      if (settings) {
-        const parsedSettings = JSON.parse(settings);
-        if (parsedSettings?.account?.avatar) {
-          setUserAvatar(parsedSettings.account.avatar);
-        }
-      }
-    } catch (error) {
-      console.error('Error loading user avatar:', error);
+    const settings = loadFromStorage('ai-chat-settings', null);
+    if (settings?.account?.avatar) {
+      setUserAvatar(settings.account.avatar);
     }
   }, []);
 
   return (
-    <header className="p-3 border-b border-gray-200 flex items-center justify-between bg-white/80 backdrop-blur-sm sticky top-0 z-10">
+    <header className={`p-3 border-b border-gray-200 flex items-center justify-between bg-white/80 backdrop-blur-sm sticky top-0 z-10 ${isMobile ? 'header-compact' : ''}`}>
       {/* Logo */}
       <div className="flex items-center">
         <div 
@@ -49,21 +53,20 @@ const Header: React.FC = () => {
         </div>
       </div>
       
-      {/* Model selector - larger and more prominent */}
+      {/* Model selector */}
       <div className="flex-1 flex justify-center px-4 max-w-md">
         <ModelSelector />
       </div>
       
       <div className="flex items-center gap-3">
-        {!isMobile && (
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">Streaming</span>
-            <Switch 
-              checked={streamingEnabled} 
-              onCheckedChange={toggleStreamingMode}
-            />
-          </div>
-        )}
+        {/* Streaming toggle - hidden on mobile in normal view */}
+        <div className={`items-center gap-2 ${isMobile ? 'hidden' : 'flex'}`}>
+          <span className="text-sm text-gray-600">Streaming</span>
+          <Switch 
+            checked={streamingEnabled} 
+            onCheckedChange={toggleStreamingMode}
+          />
+        </div>
         
         <button
           onClick={isLoggedIn ? logout : login}
@@ -95,6 +98,15 @@ const Header: React.FC = () => {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="flex flex-col gap-4">
+              {/* Streaming toggle in mobile dialog */}
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Streaming Mode</span>
+                <Switch 
+                  checked={streamingEnabled} 
+                  onCheckedChange={toggleStreamingMode} 
+                />
+              </div>
+              
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Public Server</span>
                 <Switch 
@@ -110,10 +122,8 @@ const Header: React.FC = () => {
                     <div className="text-sm font-medium truncate">{serverUrl}</div>
                   </div>
                   
-                  <div className="flex justify-center">
-                    <div className="bg-white p-2 border rounded w-40 h-40 flex items-center justify-center">
-                      <QrCode size={120} />
-                    </div>
+                  <div className="qr-code-container">
+                    {serverQrCode && <img src={serverQrCode} alt="QR Code" className="w-full h-auto" />}
                   </div>
                   
                   <div className="flex justify-center">

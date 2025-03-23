@@ -5,8 +5,7 @@ import ChatBubble from '@/components/ChatBubble';
 import ChatInput from '@/components/ChatInput';
 import Toolbar from '@/components/Toolbar';
 import Footer from '@/components/Footer';
-import AttachmentPreview from '@/components/AttachmentPreview';
-import { useChat } from '@/context/ChatContext';
+import { useChat } from '@/context/chat/ChatProvider';
 import { useAttachments } from '@/hooks/useAttachments';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -16,14 +15,9 @@ const Index = () => {
   const isMobile = useIsMobile();
   const {
     attachments,
-    previewAttachment,
     addAttachment,
     removeAttachment,
-    clearAttachments,
-    showPreview,
-    closePreview,
-    nextPreview,
-    prevPreview
+    clearAttachments
   } = useAttachments();
 
   // Check if Puter.js is loaded
@@ -70,22 +64,12 @@ const Index = () => {
           <Toolbar show={showToolbar} />
         </div>
         
-        {/* Attachment preview */}
-        <AttachmentPreview 
-          attachments={attachments}
-          previewAttachment={previewAttachment}
-          onRemove={removeAttachment}
-          onPreview={showPreview}
-          onClosePreview={closePreview}
-          onNextPreview={nextPreview}
-          onPrevPreview={prevPreview}
-        />
-        
         {/* Chat input */}
         <div className="mt-auto">
           <ChatInput 
             attachments={attachments}
             onAddAttachment={addAttachment}
+            onRemoveAttachment={removeAttachment}
             onClearAttachments={clearAttachments}
           />
         </div>

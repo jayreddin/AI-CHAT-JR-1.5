@@ -11,7 +11,6 @@ import { AIAgentsDialog } from '@/components/dialogs/AIAgentsDialog';
 import { BrowserControlDialog } from '@/components/dialogs/BrowserControlDialog';
 import { SettingsDialog } from '@/components/dialogs/SettingsDialog';
 import { ImageGenerationDialog } from '@/components/dialogs/ImageGenerationDialog';
-import { toast } from 'sonner';
 
 interface ToolbarDialogsProps {
   openDialog: string | null;
@@ -24,24 +23,21 @@ const ToolbarDialogs: React.FC<ToolbarDialogsProps> = ({
   closeDialogHandler,
   refreshCounts
 }) => {
-  // Handle image upload
+  // Handle image upload without toast notifications
   const handleImageUpload = (imageData: string, isBase64: boolean) => {
     console.log('Image uploaded:', isBase64 ? 'Base64 format' : 'URL format');
-    toast.success('Image added to context');
     // In a real implementation, we would store this image and attach it to the next message
   };
 
-  // Handle file upload
+  // Handle file upload without toast notifications
   const handleFileUpload = (fileData: string, fileName: string) => {
     console.log('File uploaded:', fileName);
-    toast.success('File added to context');
     // In a real implementation, we would store this file and attach it to the next message
   };
 
-  // Handle web URL content
+  // Handle web URL content without toast notifications
   const handleAddWebContent = (content: string) => {
     console.log('Web content added:', content);
-    toast.success('Web content added to chat');
     // In a real implementation, we would process the web content accordingly
   };
 
