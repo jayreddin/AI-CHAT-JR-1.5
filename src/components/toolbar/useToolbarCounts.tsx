@@ -53,3 +53,5 @@ export const useToolbarCounts = () => {
     refreshCounts
   };
 };
+
+export default useToolbarCounts;

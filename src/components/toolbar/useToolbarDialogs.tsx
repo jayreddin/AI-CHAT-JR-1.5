@@ -32,3 +32,5 @@ export const useToolbarDialogs = () => {
     closeDialogHandler
   };
 };
+
+export default useToolbarDialogs;

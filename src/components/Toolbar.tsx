@@ -3,8 +3,8 @@ import React from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useChat } from '@/context/chat/ChatProvider';
 import ToolbarButton from '@/components/ToolbarButton'; 
-import useToolbarDialogs from '@/components/toolbar/useToolbarDialogs';
-import useToolbarCounts from '@/components/toolbar/useToolbarCounts';
+import { useToolbarDialogs } from '@/components/toolbar/useToolbarDialogs';
+import { useToolbarCounts } from '@/components/toolbar/useToolbarCounts';
 import ToolbarDialogs from '@/components/toolbar/ToolbarDialogs';
 import { 
   History, 
@@ -46,67 +46,67 @@ const Toolbar: React.FC<ToolbarProps> = ({ show }) => {
     <>
       <div className={`flex items-center justify-center gap-1 md:gap-2 p-1 bg-white/50 backdrop-blur-sm border border-gray-200 rounded-full shadow-sm mx-auto w-fit ${isMobile ? 'max-w-full overflow-x-auto hide-scrollbar' : ''}`}>
         <ToolbarButton
-          icon={(props) => <History {...props} size={buttonSize} />}
+          icon={History}
           label="Chat History"
           onClick={() => handleButtonClick('history')}
         />
         
         <ToolbarButton
-          icon={(props) => <Image {...props} size={buttonSize} />}
+          icon={Image}
           label="Upload Image"
           onClick={() => handleButtonClick('image')}
         />
         
         <ToolbarButton
-          icon={(props) => <FileUp {...props} size={buttonSize} />}
+          icon={FileUp}
           label="Upload File"
           onClick={() => handleButtonClick('file')}
         />
         
         <ToolbarButton
-          icon={(props) => <Book {...props} size={buttonSize} />}
+          icon={Book}
           label="Knowledge Base"
           onClick={() => handleButtonClick('knowledge')}
         />
         
         <ToolbarButton
-          icon={(props) => <Link {...props} size={buttonSize} />}
+          icon={Link}
           label="Add Web URL"
           onClick={() => handleButtonClick('weburl')}
         />
         
         <ToolbarButton
-          icon={(props) => <Wrench {...props} size={buttonSize} />}
+          icon={Wrench}
           label="Tools"
           onClick={() => handleButtonClick('tools')}
         />
         
         <ToolbarButton
-          icon={(props) => <Server {...props} size={buttonSize} />}
+          icon={Server}
           label="MCP Servers"
           onClick={() => handleButtonClick('mcp')}
         />
         
         <ToolbarButton
-          icon={(props) => <Bot {...props} size={buttonSize} />}
+          icon={Bot}
           label="AI Agents"
           onClick={() => handleButtonClick('agents')}
         />
         
         <ToolbarButton
-          icon={(props) => <Globe {...props} size={buttonSize} />}
+          icon={Globe}
           label="Browser Control"
           onClick={() => handleButtonClick('browser')}
         />
         
         <ToolbarButton
-          icon={(props) => <ImageIcon {...props} size={buttonSize} />}
+          icon={ImageIcon}
           label="Image Generation"
           onClick={() => handleButtonClick('imagegeneration')}
         />
         
         <ToolbarButton
-          icon={(props) => <Settings {...props} size={buttonSize} />}
+          icon={Settings}
           label="Settings"
           onClick={() => handleButtonClick('settings')}
         />
