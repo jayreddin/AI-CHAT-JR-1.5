@@ -31,6 +31,13 @@ export const AdvancedSettingsTab: React.FC<AdvancedSettingsTabProps> = ({ settin
         imageToText: {
           enabled: true
         }
+      },
+      account: {
+        username: '',
+        avatar: null,
+        location: '',
+        dateFormat: 'MM/DD/YYYY',
+        timeFormat: '12h'
       }
     });
   };

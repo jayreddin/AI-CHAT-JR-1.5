@@ -1,175 +1,191 @@
 
 import React, { useState } from 'react';
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, Upload } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { User, Upload, X } from "lucide-react";
+import { AppSettings } from '@/hooks/useSettings';
+import { toast } from 'sonner';
 
 interface AccountTabProps {
-  settings: any;
-  setSettings: (settings: any) => void;
+  settings: AppSettings;
+  setSettings: React.Dispatch<React.SetStateAction<AppSettings>>;
 }
 
 export const AccountTab: React.FC<AccountTabProps> = ({ settings, setSettings }) => {
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(
-    settings.account?.avatar || null
-  );
-  const [username, setUsername] = useState(settings.account?.username || '');
-  const [location, setLocation] = useState(settings.account?.location || '');
-  const [dateFormat, setDateFormat] = useState(settings.account?.dateFormat || 'MM/DD/YYYY');
-  const [timeFormat, setTimeFormat] = useState(settings.account?.timeFormat || '12h');
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(settings.account.avatar);
   
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = () => {
         const result = reader.result as string;
         setAvatarPreview(result);
-        
-        setSettings({
-          ...settings,
+        setSettings(prev => ({
+          ...prev,
           account: {
-            ...settings.account,
+            ...prev.account,
             avatar: result
           }
-        });
+        }));
       };
       reader.readAsDataURL(file);
     }
   };
-  
-  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUsername(e.target.value);
-    setSettings({
-      ...settings,
+
+  const clearAvatar = () => {
+    setAvatarPreview(null);
+    setSettings(prev => ({
+      ...prev,
       account: {
-        ...settings.account,
+        ...prev.account,
+        avatar: null
+      }
+    }));
+  };
+
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSettings(prev => ({
+      ...prev,
+      account: {
+        ...prev.account,
         username: e.target.value
       }
-    });
+    }));
   };
-  
+
   const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setLocation(e.target.value);
-    setSettings({
-      ...settings,
+    setSettings(prev => ({
+      ...prev,
       account: {
-        ...settings.account,
+        ...prev.account,
         location: e.target.value
       }
-    });
+    }));
   };
-  
+
   const handleDateFormatChange = (value: string) => {
-    setDateFormat(value);
-    setSettings({
-      ...settings,
+    setSettings(prev => ({
+      ...prev,
       account: {
-        ...settings.account,
+        ...prev.account,
         dateFormat: value
       }
-    });
+    }));
   };
-  
+
   const handleTimeFormatChange = (value: string) => {
-    setTimeFormat(value);
-    setSettings({
-      ...settings,
+    setSettings(prev => ({
+      ...prev,
       account: {
-        ...settings.account,
+        ...prev.account,
         timeFormat: value
       }
-    });
+    }));
   };
-  
+
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
-        <h3 className="text-lg font-medium">Profile</h3>
-        <div className="flex items-center gap-4">
-          <div className="relative">
-            <Avatar className="w-20 h-20">
-              <AvatarImage src={avatarPreview || undefined} />
+      <h3 className="text-lg font-medium">Account Settings</h3>
+      
+      {/* Avatar upload */}
+      <div className="flex flex-col items-center space-y-3">
+        <div className="relative">
+          <Avatar className="h-24 w-24">
+            {avatarPreview ? (
+              <AvatarImage src={avatarPreview} alt="User avatar" />
+            ) : (
               <AvatarFallback className="bg-primary/10">
-                <User className="w-8 h-8 text-primary" />
+                <User size={40} className="text-primary" />
               </AvatarFallback>
-            </Avatar>
-            <label 
-              htmlFor="avatar-upload" 
-              className="absolute -bottom-1 -right-1 p-1 bg-primary text-white rounded-full cursor-pointer"
-            >
-              <Upload size={14} />
-              <span className="sr-only">Upload avatar</span>
-            </label>
-            <input 
-              id="avatar-upload" 
-              type="file" 
-              accept="image/*" 
-              className="hidden" 
-              onChange={handleAvatarChange} 
-            />
-          </div>
+            )}
+          </Avatar>
           
-          <div className="space-y-2 flex-1">
-            <div className="space-y-1">
-              <Label htmlFor="username">Username</Label>
-              <Input 
-                id="username" 
-                placeholder="Your username" 
-                value={username} 
-                onChange={handleUsernameChange} 
-              />
+          {avatarPreview && (
+            <button 
+              onClick={clearAvatar}
+              className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors"
+            >
+              <X size={14} />
+            </button>
+          )}
+        </div>
+        
+        <div>
+          <Label htmlFor="avatar-upload" className="cursor-pointer">
+            <div className="flex items-center gap-1 text-sm text-primary hover:underline">
+              <Upload size={14} />
+              <span>Upload avatar</span>
             </div>
-            
-            <div className="space-y-1">
-              <Label htmlFor="location">Location</Label>
-              <Input 
-                id="location" 
-                placeholder="Your location" 
-                value={location} 
-                onChange={handleLocationChange} 
-              />
-            </div>
-          </div>
+          </Label>
+          <Input 
+            id="avatar-upload" 
+            type="file"
+            accept="image/*"
+            onChange={handleAvatarUpload}
+            className="hidden"
+          />
         </div>
       </div>
       
-      <div className="space-y-4">
-        <h3 className="text-lg font-medium">Date & Time Format</h3>
-        
-        <div className="space-y-3">
-          <div className="space-y-1">
-            <Label htmlFor="date-format">Date Format</Label>
-            <Select value={dateFormat} onValueChange={handleDateFormatChange}>
-              <SelectTrigger id="date-format">
-                <SelectValue placeholder="Select date format" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="MM/DD/YYYY">MM/DD/YYYY</SelectItem>
-                <SelectItem value="DD/MM/YYYY">DD/MM/YYYY</SelectItem>
-                <SelectItem value="YYYY-MM-DD">YYYY-MM-DD</SelectItem>
-                <SelectItem value="DD.MM.YYYY">DD.MM.YYYY</SelectItem>
-                <SelectItem value="MMMM D, YYYY">MMMM D, YYYY</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="space-y-1">
-            <Label htmlFor="time-format">Time Format</Label>
-            <Select value={timeFormat} onValueChange={handleTimeFormatChange}>
-              <SelectTrigger id="time-format">
-                <SelectValue placeholder="Select time format" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="12h">12-hour (1:30 PM)</SelectItem>
-                <SelectItem value="24h">24-hour (13:30)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+      {/* Username */}
+      <div className="space-y-2">
+        <Label htmlFor="username">Username</Label>
+        <Input 
+          id="username" 
+          placeholder="Your username"
+          value={settings.account.username}
+          onChange={handleUsernameChange}
+        />
+      </div>
+      
+      {/* Location */}
+      <div className="space-y-2">
+        <Label htmlFor="location">Location</Label>
+        <Input 
+          id="location" 
+          placeholder="Your location"
+          value={settings.account.location}
+          onChange={handleLocationChange}
+        />
+      </div>
+      
+      {/* Date Format */}
+      <div className="space-y-2">
+        <Label htmlFor="date-format">Date Format</Label>
+        <Select 
+          value={settings.account.dateFormat} 
+          onValueChange={handleDateFormatChange}
+        >
+          <SelectTrigger id="date-format">
+            <SelectValue placeholder="Select date format" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="MM/DD/YYYY">MM/DD/YYYY</SelectItem>
+            <SelectItem value="DD/MM/YYYY">DD/MM/YYYY</SelectItem>
+            <SelectItem value="YYYY-MM-DD">YYYY-MM-DD</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      
+      {/* Time Format */}
+      <div className="space-y-2">
+        <Label htmlFor="time-format">Time Format</Label>
+        <Select 
+          value={settings.account.timeFormat} 
+          onValueChange={handleTimeFormatChange}
+        >
+          <SelectTrigger id="time-format">
+            <SelectValue placeholder="Select time format" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="12h">12-hour (AM/PM)</SelectItem>
+            <SelectItem value="24h">24-hour</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
     </div>
   );

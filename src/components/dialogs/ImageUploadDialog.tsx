@@ -6,7 +6,6 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Upload, X, History } from "lucide-react";
-import { toast } from 'sonner';
 
 interface ImageUploadDialogProps {
   open: boolean;
@@ -55,7 +54,7 @@ export function ImageUploadDialog({
         setIsLoading(false);
       };
       reader.onerror = () => {
-        toast.error("Error reading image file");
+        console.error("Error reading image file");
         setIsLoading(false);
       };
       reader.readAsDataURL(file);
@@ -82,7 +81,6 @@ export function ImageUploadDialog({
       // Reset and close
       onOpenChange(false);
       setSelectedImage(null);
-      toast.success(`Image added${isBase64 ? ' as Base64' : ''}`);
     }
   };
 

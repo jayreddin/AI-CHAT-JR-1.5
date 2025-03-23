@@ -21,12 +21,12 @@ const ModelSelector: React.FC = () => {
         <SelectTrigger 
           className={`
             text-center h-auto py-1.5 px-3 font-semibold
-            ${isMobile ? 'text-sm' : 'text-base'}
+            ${isMobile ? 'text-sm' : 'text-lg'}
             bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200
             dark:from-blue-900/20 dark:to-indigo-900/20 dark:border-blue-800
           `}
         >
-          <SelectValue placeholder="Select a model" className="text-center mx-auto" />
+          <SelectValue placeholder="Select a model" className="mx-auto w-full text-center" />
         </SelectTrigger>
         <SelectContent className="max-h-80 overflow-y-auto">
           <SelectGroup>

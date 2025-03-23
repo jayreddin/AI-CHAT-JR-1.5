@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { UserCheck, User, QrCode, Server, Settings as SettingsIcon } from 'lucide-react';
 import ModelSelector from './ModelSelector';
 import { useChat } from '@/context/ChatContext';
@@ -7,6 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 const Header: React.FC = () => {
   const { isLoggedIn, login, logout, streamingEnabled, toggleStreamingMode } = useChat();
@@ -14,6 +15,22 @@ const Header: React.FC = () => {
   const [showMobileSettings, setShowMobileSettings] = useState(false);
   const [serverActive, setServerActive] = useState(false);
   const serverUrl = "https://jr-ai-chat.example.com/mobile-server";
+  const [userAvatar, setUserAvatar] = useState<string | null>(null);
+  
+  // Load user avatar from settings
+  useEffect(() => {
+    try {
+      const settings = localStorage.getItem('ai-chat-settings');
+      if (settings) {
+        const parsedSettings = JSON.parse(settings);
+        if (parsedSettings?.account?.avatar) {
+          setUserAvatar(parsedSettings.account.avatar);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading user avatar:', error);
+    }
+  }, []);
 
   return (
     <header className="p-3 border-b border-gray-200 flex items-center justify-between bg-white/80 backdrop-blur-sm sticky top-0 z-10">
@@ -54,7 +71,16 @@ const Header: React.FC = () => {
           title={isLoggedIn ? "Signed in" : "Sign in"}
         >
           {isLoggedIn ? (
-            <UserCheck size={20} className="text-green-500" />
+            userAvatar ? (
+              <Avatar className="h-6 w-6">
+                <AvatarImage src={userAvatar} alt="User avatar" />
+                <AvatarFallback>
+                  <UserCheck size={20} className="text-green-500" />
+                </AvatarFallback>
+              </Avatar>
+            ) : (
+              <UserCheck size={20} className="text-green-500" />
+            )
           ) : (
             <User size={20} className="text-gray-500" />
           )}

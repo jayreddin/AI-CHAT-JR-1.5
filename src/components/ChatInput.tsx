@@ -40,6 +40,15 @@ const ChatInput: React.FC<ChatInputProps> = ({
       const savedFiles = localStorage.getItem('knowledge-base-files');
       if (savedFiles) {
         setKnowledgeFiles(JSON.parse(savedFiles));
+      } else {
+        // Add some example files for testing
+        const exampleFiles = [
+          { name: 'example1.txt', content: 'This is example 1 content' },
+          { name: 'example2.txt', content: 'This is example 2 content' },
+          { name: 'notes.txt', content: 'These are some important notes' }
+        ];
+        localStorage.setItem('knowledge-base-files', JSON.stringify(exampleFiles));
+        setKnowledgeFiles(exampleFiles);
       }
     } catch (error) {
       console.error('Error loading knowledge base files:', error);
@@ -68,7 +77,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
       e.preventDefault();
       handleSendMessage();
     } else if (e.key === '!') {
-      // Show knowledge base files when user types "!"
       setShowKnowledgeBase(true);
       setCursorPosition(e.currentTarget.selectionStart);
     }
@@ -158,7 +166,10 @@ const ChatInput: React.FC<ChatInputProps> = ({
         />
         
         {showKnowledgeBase && knowledgeFiles.length > 0 && (
-          <div className="absolute bottom-full left-0 mb-2 bg-white border border-gray-200 rounded-md shadow-md max-h-40 overflow-y-auto w-64">
+          <div className="absolute bottom-full left-0 mb-2 bg-white border border-gray-200 rounded-md shadow-md max-h-40 overflow-y-auto w-64 z-50">
+            <div className="p-2 bg-gray-100 border-b text-xs font-medium">
+              Knowledge base files (click to add)
+            </div>
             {knowledgeFiles.map((file, index) => (
               <button
                 key={index}

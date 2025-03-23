@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { FileText, History, X } from "lucide-react";
-import { toast } from 'sonner';
 
 interface FileUploadDialogProps {
   open: boolean;
@@ -35,7 +34,7 @@ export function FileUploadDialog({
         setIsLoading(false);
       };
       reader.onerror = () => {
-        toast.error("Error reading file");
+        console.error("Error reading file");
         setIsLoading(false);
       };
       reader.readAsDataURL(file);
@@ -60,7 +59,6 @@ export function FileUploadDialog({
       onOpenChange(false);
       setSelectedFile(null);
       setFileName("");
-      toast.success("File added successfully");
     }
   };
 
