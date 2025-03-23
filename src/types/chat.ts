@@ -14,6 +14,7 @@ export type MessageType = {
   timestamp: Date;
   model?: string;
   isStreaming?: boolean;
+  reasoningContext?: string; // Added for DeepSeek Reasoner
 };
 
 // Define chat type

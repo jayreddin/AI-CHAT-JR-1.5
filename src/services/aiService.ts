@@ -1,6 +1,7 @@
 
 import { generateId } from '@/utils/helpers';
 import { MessageType } from '@/types/chat';
+import { toast } from 'sonner';
 
 interface ChatOptions {
   model?: string;
@@ -32,18 +33,45 @@ export const aiService = {
         stream: isStreaming
       };
 
+      console.log(`Sending message to model: ${model}, streaming: ${isStreaming}`);
+
       // Check if Puter is available
       if (typeof window !== 'undefined' && window.puter) {
         if (isStreaming) {
           // Handle streaming response
-          const streamResponse = await window.puter.ai.chat(content, options);
-          return { message, stream: streamResponse };
+          try {
+            const streamResponse = await window.puter.ai.chat(content, options);
+            console.log('Got stream response object:', streamResponse);
+            return { message, stream: streamResponse };
+          } catch (error) {
+            console.error('Streaming error:', error);
+            message.content = `Error: ${error.message || 'Unknown streaming error'}`;
+            return { message };
+          }
         } else {
           // Handle non-streaming response
-          const response = await window.puter.ai.chat(content, options);
-          message.content = typeof response === 'string' ? response : response.message?.content || '';
-          message.isStreaming = false;
-          return { message };
+          try {
+            const response = await window.puter.ai.chat(content, options);
+            console.log('Got response:', response);
+            
+            // Handle different response formats
+            if (typeof response === 'string') {
+              message.content = response;
+            } else if (response.message?.content) {
+              message.content = response.message.content;
+            } else if (response.content) {
+              message.content = response.content;
+            } else {
+              message.content = 'Received response in an unsupported format.';
+            }
+            
+            message.isStreaming = false;
+            return { message };
+          } catch (error) {
+            console.error('Non-streaming error:', error);
+            message.content = `Error: ${error.message || 'Unknown error'}`;
+            return { message };
+          }
         }
       } else {
         // Fallback for when Puter is not available
@@ -57,6 +85,7 @@ export const aiService = {
       }
     } catch (error) {
       console.error('Error sending message to AI:', error);
+      toast.error(`AI Error: ${error.message || 'Unknown error'}`);
       throw error;
     }
   },
@@ -70,6 +99,7 @@ export const aiService = {
       return null;
     } catch (error) {
       console.error('Error generating image:', error);
+      toast.error(`Image generation error: ${error.message || 'Unknown error'}`);
       return null;
     }
   },
@@ -83,6 +113,7 @@ export const aiService = {
       return 'Image text extraction is not available';
     } catch (error) {
       console.error('Error extracting text from image:', error);
+      toast.error(`Text extraction error: ${error.message || 'Unknown error'}`);
       return 'Error extracting text from image';
     }
   },
@@ -96,6 +127,7 @@ export const aiService = {
       return null;
     } catch (error) {
       console.error('Error converting text to speech:', error);
+      toast.error(`Text-to-speech error: ${error.message || 'Unknown error'}`);
       return null;
     }
   }

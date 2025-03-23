@@ -1,8 +1,11 @@
 
 import React, { useState } from 'react';
 import { Copy, Edit, RefreshCw, Trash, Send } from 'lucide-react';
-import { useChat, MessageType } from '@/context/ChatContext';
+import { useChat } from '@/context/ChatContext';
 import { formatDistanceToNow } from 'date-fns';
+import ReactMarkdown from 'react-markdown';
+import { MessageType } from '@/types/chat';
+import { toast } from 'sonner';
 
 interface ChatBubbleProps {
   message: MessageType;
@@ -16,7 +19,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
 
   const handleCopy = () => {
     navigator.clipboard.writeText(message.content);
-    // In a real implementation, we might show a toast notification here
+    toast.success('Copied to clipboard');
   };
 
   const handleEdit = () => {
@@ -95,7 +98,19 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
           </div>
         </div>
       ) : (
-        <div className="text-sm whitespace-pre-wrap break-words">{message.content}</div>
+        <>
+          <div className="text-sm whitespace-pre-wrap break-words prose prose-sm max-w-none">
+            <ReactMarkdown>{message.content}</ReactMarkdown>
+          </div>
+          
+          {/* Show reasoning context for DeepSeek Reasoner if available */}
+          {message.reasoningContext && (
+            <div className="mt-2 p-2 bg-gray-100 rounded text-xs text-gray-600 italic">
+              <div className="text-xs font-semibold mb-1">Reasoning:</div>
+              <ReactMarkdown>{message.reasoningContext}</ReactMarkdown>
+            </div>
+          )}
+        </>
       )}
 
       {/* Message actions */}

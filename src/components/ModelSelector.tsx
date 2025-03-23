@@ -1,7 +1,8 @@
 
 import React, { useState } from 'react';
 import { Check, ChevronDown } from 'lucide-react';
-import { AIModel, useChat } from '@/context/ChatContext';
+import { useChat } from '@/context/ChatContext';
+import { AIModel } from '@/types/chat';
 
 const ModelSelector: React.FC = () => {
   const { currentModel, setModel, AVAILABLE_MODELS } = useChat();

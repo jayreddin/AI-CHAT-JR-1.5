@@ -1,9 +1,9 @@
-
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { AIModel, ChatType, MessageType } from '@/types/chat';
 import { AVAILABLE_MODELS } from '@/constants/models';
 import { generateId } from '@/utils/helpers';
 import { aiService } from '@/services/aiService';
+import { toast } from 'sonner';
 
 // Define chat context type
 type ChatContextType = {
@@ -164,37 +164,105 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setChats(chats.map((c) => (c.id === updatedChat.id ? updatedChat : c)));
 
     try {
+      console.log(`Requesting ${currentModel.id} with streaming: ${streamingEnabled}`);
       const { message, stream } = await aiService.sendMessage(content, currentModel.id, streamingEnabled);
       
       if (streamingEnabled && stream) {
         // Handle streaming response
         let streamedContent = '';
+        let reasoningContext = '';
+        const isDeepSeekReasoner = currentModel.id === 'deepseek-reasoner';
         
-        for await (const part of stream) {
-          if (!isStreaming) break; // Stop generation if requested
+        try {
+          for await (const part of stream) {
+            if (!isStreaming) break; // Stop generation if requested
+            
+            console.log("Stream part:", part);
+            
+            if (part === null || part === undefined) continue;
+            
+            let textContent = '';
+            
+            // Handle different streaming formats
+            if (typeof part === 'string') {
+              textContent = part;
+            } else if (part.text) {
+              textContent = typeof part.text === 'string' ? part.text : '';
+            } else if (part.content) {
+              textContent = part.content;
+            } else if (part.message?.content) {
+              textContent = part.message.content;
+            }
+            
+            // Handle DeepSeek Reasoner specific format
+            if (isDeepSeekReasoner && part.type === 'thinking') {
+              reasoningContext += textContent;
+              
+              const updatedMessage = {
+                ...assistantMessage,
+                content: streamedContent,
+                reasoningContext: reasoningContext,
+              };
+  
+              const updatedChatWithResponse = {
+                ...updatedChat,
+                messages: updatedChat.messages.map((m) =>
+                  m.id === assistantMessage.id ? updatedMessage : m
+                ),
+              };
+  
+              setCurrentChatState(updatedChatWithResponse);
+              setChats(chats.map((c) => (c.id === updatedChatWithResponse.id ? updatedChatWithResponse : c)));
+            } else {
+              streamedContent += textContent;
+              
+              const updatedMessage = {
+                ...assistantMessage,
+                content: streamedContent,
+                reasoningContext: isDeepSeekReasoner ? reasoningContext : undefined,
+              };
+  
+              const updatedChatWithResponse = {
+                ...updatedChat,
+                messages: updatedChat.messages.map((m) =>
+                  m.id === assistantMessage.id ? updatedMessage : m
+                ),
+              };
+  
+              setCurrentChatState(updatedChatWithResponse);
+              setChats(chats.map((c) => (c.id === updatedChatWithResponse.id ? updatedChatWithResponse : c)));
+            }
+          }
+        } catch (streamError) {
+          console.error("Streaming error:", streamError);
+          toast.error(`Streaming error: ${streamError.message || 'Unknown error'}`);
           
-          streamedContent += part?.text || '';
-          
-          const updatedMessage = {
+          // Update with error message
+          const errorMessage = {
             ...assistantMessage,
-            content: streamedContent,
+            content: streamedContent || 'Sorry, there was an error while streaming the response.',
+            isStreaming: false,
           };
-
-          const updatedChatWithResponse = {
+  
+          const errorChat = {
             ...updatedChat,
             messages: updatedChat.messages.map((m) =>
-              m.id === assistantMessage.id ? updatedMessage : m
+              m.id === assistantMessage.id ? errorMessage : m
             ),
           };
-
-          setCurrentChatState(updatedChatWithResponse);
-          setChats(chats.map((c) => (c.id === updatedChatWithResponse.id ? updatedChatWithResponse : c)));
+  
+          setCurrentChatState(errorChat);
+          setChats(chats.map((c) => (c.id === errorChat.id ? errorChat : c)));
+          
+          setIsStreaming(false);
+          return;
         }
         
         // Finalize streaming message
         const finalMessage = {
           ...assistantMessage,
-          content: streamedContent,
+          content: streamedContent || 'No response received.',
+          reasoningContext: isDeepSeekReasoner ? reasoningContext : undefined,
           isStreaming: false,
         };
 
@@ -211,7 +279,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         // Handle non-streaming response
         const finalMessage = {
           ...assistantMessage,
-          content: message.content,
+          content: message.content || 'No response received.',
           isStreaming: false,
         };
 
@@ -227,6 +295,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
     } catch (error) {
       console.error('Error in AI response:', error);
+      toast.error(`AI error: ${error.message || 'Unknown error'}`);
       
       // Update with error message
       const errorMessage = {
@@ -406,3 +475,6 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
 // Custom hook to use the chat context
 export const useChat = () => useContext(ChatContext);
+
+// Export types
+export type { ChatContextType, ChatType, MessageType, AIModel };
