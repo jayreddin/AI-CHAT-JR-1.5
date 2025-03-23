@@ -1,12 +1,13 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Mic, Square, Paperclip, Image, FileUp, FileText } from 'lucide-react';
+import { Send, Mic, Square } from 'lucide-react';
 import { useChat } from '@/context/chat/ChatProvider';
 import { Attachment } from '@/hooks/useAttachments';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { useKnowledgeBase, KnowledgeFile } from '@/hooks/useKnowledgeBase';
 import AttachmentThumbnails from './AttachmentThumbnails';
+import AttachmentButtons from './AttachmentButtons';
+import KnowledgeBaseSelector from './KnowledgeBaseSelector';
+import ActiveKnowledgeFiles from './ActiveKnowledgeFiles';
 
 interface ChatInputProps {
   attachments?: Attachment[];
@@ -28,7 +29,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
   const [activeKnowledgeFiles, setActiveKnowledgeFiles] = useState<string[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isMobile = useIsMobile();
-  const { knowledgeFiles } = useKnowledgeBase();
 
   // Auto resize textarea
   useEffect(() => {
@@ -55,7 +55,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   const handleSendMessage = () => {
     if (!message.trim() && attachments.length === 0) return;
     
-    // In a real implementation, you would include the attachments with the message
+    // Include the attachments and knowledge files in the log
     console.log('Sending message with attachments:', attachments);
     console.log('Active knowledge files:', activeKnowledgeFiles);
     
@@ -92,28 +92,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
     }
   };
 
-  const handleAddAttachment = (type: 'image' | 'file') => {
-    if (onAddAttachment) {
-      if (type === 'image') {
-        onAddAttachment({
-          type: 'image',
-          content: 'https://picsum.photos/200',
-          name: 'example.jpg',
-          size: 1024 * 10,
-          isBase64: false
-        });
-      } else {
-        onAddAttachment({
-          type: 'file',
-          content: 'Example file content',
-          name: 'example.txt',
-          size: 1024 * 2,
-          isBase64: false
-        });
-      }
-    }
-  };
-
   const addKnowledgeFile = (fileName: string) => {
     if (!activeKnowledgeFiles.includes(fileName)) {
       setActiveKnowledgeFiles([...activeKnowledgeFiles, fileName]);
@@ -135,20 +113,10 @@ const ChatInput: React.FC<ChatInputProps> = ({
 
       {/* Display active knowledge base files */}
       {activeKnowledgeFiles.length > 0 && (
-        <div className="mb-2 flex flex-wrap gap-1">
-          {activeKnowledgeFiles.map((file, index) => (
-            <div key={index} className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full flex items-center">
-              <FileText size={12} className="mr-1" />
-              <span>{file}</span>
-              <button 
-                className="ml-1 text-blue-500 hover:text-blue-700"
-                onClick={() => setActiveKnowledgeFiles(activeKnowledgeFiles.filter(f => f !== file))}
-              >
-                ×
-              </button>
-            </div>
-          ))}
-        </div>
+        <ActiveKnowledgeFiles 
+          files={activeKnowledgeFiles}
+          onRemove={(file) => setActiveKnowledgeFiles(activeKnowledgeFiles.filter(f => f !== file))}
+        />
       )}
       
       {/* Display attachment thumbnails */}
@@ -172,56 +140,24 @@ const ChatInput: React.FC<ChatInputProps> = ({
           disabled={!isLoggedIn || isStreaming}
         />
         
-        {showKnowledgeBase && knowledgeFiles.length > 0 && (
-          <div className="absolute bottom-full left-0 mb-2 bg-white border border-gray-200 rounded-md shadow-md max-h-40 overflow-y-auto w-64 z-50">
-            <div className="p-2 bg-gray-100 border-b text-xs font-medium">
-              Knowledge base files (click to add)
-            </div>
-            {knowledgeFiles.map((file, index) => (
-              <button
-                key={index}
-                className="w-full text-left px-3 py-2 hover:bg-gray-100 flex items-center gap-2"
-                onClick={() => addKnowledgeFile(file.name)}
-              >
-                <FileText size={14} />
-                <span className="text-sm truncate">{file.name}</span>
-              </button>
-            ))}
-          </div>
+        {/* Knowledge base selector */}
+        {showKnowledgeBase && (
+          <KnowledgeBaseSelector 
+            onSelect={addKnowledgeFile}
+            onClose={() => setShowKnowledgeBase(false)}
+          />
         )}
         
         <div className="absolute right-2 bottom-2 flex items-center gap-1">
+          {/* Attachment buttons */}
           {onAddAttachment && (
-            <Popover>
-              <PopoverTrigger asChild>
-                <button
-                  className="p-2 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
-                  title="Add attachment"
-                  disabled={!isLoggedIn || isStreaming}
-                >
-                  <Paperclip size={isMobile ? 16 : 18} />
-                </button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto" align="end">
-                <div className="grid gap-1">
-                  <button 
-                    className="flex items-center gap-2 px-3 py-2 hover:bg-accent rounded-md transition-colors"
-                    onClick={() => handleAddAttachment('image')}
-                  >
-                    <Image size={16} />
-                    <span>Add Image</span>
-                  </button>
-                  <button 
-                    className="flex items-center gap-2 px-3 py-2 hover:bg-accent rounded-md transition-colors"
-                    onClick={() => handleAddAttachment('file')}
-                  >
-                    <FileUp size={16} />
-                    <span>Add File</span>
-                  </button>
-                </div>
-              </PopoverContent>
-            </Popover>
+            <AttachmentButtons 
+              onAddAttachment={onAddAttachment} 
+              disabled={!isLoggedIn || isStreaming}
+            />
           )}
+          
+          {/* Mic button */}
           <button
             onClick={toggleMic}
             className={`p-2 rounded-full ${
@@ -233,6 +169,8 @@ const ChatInput: React.FC<ChatInputProps> = ({
           >
             <Mic size={isMobile ? 16 : 18} />
           </button>
+          
+          {/* Send button */}
           <button
             onClick={isLoggedIn ? handleSendMessage : login}
             className={`p-2 rounded-full ${

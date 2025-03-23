@@ -23,7 +23,7 @@ const Index = () => {
   // Check if Puter.js is loaded
   useEffect(() => {
     const checkPuter = () => {
-      if (window.puter) {
+      if ((window as any).puter) {
         setInitialized(true);
       } else {
         setTimeout(checkPuter, 100);

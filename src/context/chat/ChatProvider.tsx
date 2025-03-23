@@ -274,7 +274,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   // Set the current model
-  const setModel = (model: AVAILABLE_MODELS[number]) => {
+  const setModel = (model: typeof AVAILABLE_MODELS[number]) => {
     dispatch({ type: 'SET_MODEL', payload: model });
   };
 
@@ -320,13 +320,55 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [recognition, setRecognition] = useState<any>(null);
   const [transcript, setTranscript] = useState('');
 
+  // Declare SpeechRecognition interface for TypeScript
+  interface SpeechRecognitionEvent extends Event {
+    results: SpeechRecognitionResultList;
+    resultIndex: number;
+    error?: any;
+  }
+
+  interface SpeechRecognitionResultList {
+    length: number;
+    item(index: number): SpeechRecognitionResult;
+    [index: number]: SpeechRecognitionResult;
+  }
+
+  interface SpeechRecognitionResult {
+    length: number;
+    item(index: number): SpeechRecognitionAlternative;
+    [index: number]: SpeechRecognitionAlternative;
+    isFinal: boolean;
+  }
+
+  interface SpeechRecognitionAlternative {
+    transcript: string;
+    confidence: number;
+  }
+  
+  interface SpeechRecognitionInterface extends EventTarget {
+    continuous: boolean;
+    interimResults: boolean;
+    lang: string;
+    start: () => void;
+    stop: () => void;
+    onresult: (event: SpeechRecognitionEvent) => void;
+    onerror: (event: Event) => void;
+    onend: () => void;
+    onstart: () => void;
+  }
+
+  interface SpeechRecognitionConstructor {
+    new (): SpeechRecognitionInterface;
+  }
+
   const activateSpeechToText = () => {
     try {
       // Request microphone access
       navigator.mediaDevices.getUserMedia({ audio: true })
         .then(() => {
           // Check if SpeechRecognition is available
-          const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+          const SpeechRecognition = window.SpeechRecognition || 
+            (window as any).webkitSpeechRecognition as SpeechRecognitionConstructor;
           
           if (SpeechRecognition) {
             const recognitionInstance = new SpeechRecognition();
@@ -339,7 +381,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               console.log('Speech recognition started');
             };
             
-            recognitionInstance.onresult = (event) => {
+            recognitionInstance.onresult = (event: SpeechRecognitionEvent) => {
               let interimTranscript = '';
               let finalTranscript = '';
               
