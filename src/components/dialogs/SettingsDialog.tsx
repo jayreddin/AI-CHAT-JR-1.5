@@ -6,7 +6,15 @@ import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { Settings, Moon, Terminal, Minimize, Database, ImagePlus, FileText } from 'lucide-react';
+import { 
+  Settings, 
+  Moon, 
+  Terminal, 
+  Minimize, 
+  Database, 
+  ImagePlus, 
+  FileText 
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { Separator } from "@/components/ui/separator";
 
@@ -71,6 +79,18 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ open, onOpenChan
         } catch (error) {
           console.error('Error parsing saved settings:', error);
         }
+      }
+      
+      // Check if dark mode is currently applied to the document
+      const isDarkMode = document.documentElement.classList.contains('dark');
+      if (isDarkMode !== settings.appearance.darkMode) {
+        setSettings(prev => ({
+          ...prev,
+          appearance: {
+            ...prev.appearance,
+            darkMode: isDarkMode
+          }
+        }));
       }
     }
   }, [open]);
@@ -148,6 +168,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ open, onOpenChan
         <TabsContent value="appearance" className="space-y-6">
           <h3 className="text-lg font-medium">Display Options</h3>
           
+          {/* Row 1: Dark Mode and Terminal Commands side by side */}
           <div className="grid grid-cols-2 gap-4">
             <div className="flex items-center gap-2 p-3 border rounded-lg">
               <div className="p-2 bg-primary/10 rounded-full">
@@ -176,6 +197,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ open, onOpenChan
             </div>
           </div>
           
+          {/* Row 2: Compact Mode and Memory side by side */}
           <div className="grid grid-cols-2 gap-4">
             <div className="flex items-center gap-2 p-3 border rounded-lg">
               <div className="p-2 bg-primary/10 rounded-full">
@@ -206,6 +228,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ open, onOpenChan
           
           <Separator />
           
+          {/* Text Size Slider */}
           <div className="space-y-2">
             <div className="flex justify-between items-center">
               <label className="text-sm font-medium">Text Size: {settings.appearance.textSize}%</label>
@@ -258,6 +281,14 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ open, onOpenChan
                     onCheckedChange={() => toggleNestedSetting('ai', 'imageGeneration', 'testMode')}
                   />
                 </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Powered by Puter's AI txt2img API. Uses DALL·E model in test mode.
+                </p>
+                <div className="text-xs text-muted-foreground mt-1">
+                  <code className="bg-background p-1 rounded text-xs block mt-2 overflow-x-auto">
+                    puter.ai.txt2img('A picture of a cat.', true)
+                  </code>
+                </div>
               </div>
             )}
             
@@ -276,6 +307,19 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ open, onOpenChan
                 onCheckedChange={() => toggleNestedSetting('ai', 'imageToText', 'enabled')}
               />
             </div>
+            
+            {settings.ai.imageToText.enabled && (
+              <div className="ml-12 p-3 border rounded-lg bg-accent/20">
+                <p className="text-xs text-muted-foreground mt-1">
+                  Powered by Puter's AI img2txt API. Extract text from any image URL.
+                </p>
+                <div className="text-xs text-muted-foreground mt-1">
+                  <code className="bg-background p-1 rounded text-xs block mt-2 overflow-x-auto">
+                    puter.ai.img2txt('https://example.com/image.jpg')
+                  </code>
+                </div>
+              </div>
+            )}
           </div>
         </TabsContent>
         

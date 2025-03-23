@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ToolbarButton from './ToolbarButton';
 import { 
   Plus, 
@@ -34,6 +34,53 @@ interface ToolbarProps {
 const Toolbar: React.FC<ToolbarProps> = ({ show }) => {
   const { createNewChat, sendMessage } = useChat();
   const [openDialog, setOpenDialog] = useState<string | null>(null);
+  
+  // Get counts of active tools, servers, and agents
+  const [activeToolsCount, setActiveToolsCount] = useState(0);
+  const [activeServersCount, setActiveServersCount] = useState(0);
+  const [installedAgentsCount, setInstalledAgentsCount] = useState(0);
+  
+  // Load counts from localStorage
+  useEffect(() => {
+    const loadStoredCounts = () => {
+      try {
+        // Load tools count
+        const storedTools = localStorage.getItem('ai-chat-tools');
+        if (storedTools) {
+          const tools = JSON.parse(storedTools);
+          const activeCount = tools.filter((tool: any) => tool.installed && tool.active).length;
+          setActiveToolsCount(activeCount);
+        }
+        
+        // Load MCP servers count
+        const storedServers = localStorage.getItem('ai-chat-mcp-servers');
+        if (storedServers) {
+          const servers = JSON.parse(storedServers);
+          const activeCount = servers.filter((server: any) => server.installed && server.active).length;
+          setActiveServersCount(activeCount);
+        }
+        
+        // Load AI agents count
+        const storedAgents = localStorage.getItem('ai-chat-agents');
+        if (storedAgents) {
+          const agents = JSON.parse(storedAgents);
+          const installedCount = agents.filter((agent: any) => agent.installed).length;
+          setInstalledAgentsCount(installedCount);
+        }
+      } catch (error) {
+        console.error('Error loading stored counts:', error);
+      }
+    };
+    
+    loadStoredCounts();
+    
+    // Listen for storage changes to update counts
+    window.addEventListener('storage', loadStoredCounts);
+    
+    return () => {
+      window.removeEventListener('storage', loadStoredCounts);
+    };
+  }, []);
 
   // Function to open a specific dialog
   const openDialogHandler = (dialogName: string) => {
@@ -43,6 +90,35 @@ const Toolbar: React.FC<ToolbarProps> = ({ show }) => {
   // Function to close the current dialog
   const closeDialogHandler = () => {
     setOpenDialog(null);
+    
+    // Refresh counts after dialog closes
+    try {
+      // Update tools count
+      const storedTools = localStorage.getItem('ai-chat-tools');
+      if (storedTools) {
+        const tools = JSON.parse(storedTools);
+        const activeCount = tools.filter((tool: any) => tool.installed && tool.active).length;
+        setActiveToolsCount(activeCount);
+      }
+      
+      // Update MCP servers count
+      const storedServers = localStorage.getItem('ai-chat-mcp-servers');
+      if (storedServers) {
+        const servers = JSON.parse(storedServers);
+        const activeCount = servers.filter((server: any) => server.installed && server.active).length;
+        setActiveServersCount(activeCount);
+      }
+      
+      // Update AI agents count
+      const storedAgents = localStorage.getItem('ai-chat-agents');
+      if (storedAgents) {
+        const agents = JSON.parse(storedAgents);
+        const installedCount = agents.filter((agent: any) => agent.installed).length;
+        setInstalledAgentsCount(installedCount);
+      }
+    } catch (error) {
+      console.error('Error updating stored counts:', error);
+    }
   };
 
   // Handle image upload
@@ -79,9 +155,21 @@ const Toolbar: React.FC<ToolbarProps> = ({ show }) => {
         <ToolbarButton icon={FileUp} label="File Upload" onClick={() => openDialogHandler('file')} />
         <ToolbarButton icon={BookOpen} label="Knowledge Base" onClick={() => openDialogHandler('knowledge')} />
         <ToolbarButton icon={Globe} label="Web URL" onClick={() => openDialogHandler('weburl')} />
-        <ToolbarButton icon={Wrench} label="Tools" onClick={() => openDialogHandler('tools')} />
-        <ToolbarButton icon={Server} label="MCP Server" onClick={() => openDialogHandler('mcp')} />
-        <ToolbarButton icon={Bot} label="AI Agents" onClick={() => openDialogHandler('agents')} />
+        <ToolbarButton 
+          icon={Wrench} 
+          label={activeToolsCount > 0 ? `Tools (${activeToolsCount})` : "Tools"} 
+          onClick={() => openDialogHandler('tools')} 
+        />
+        <ToolbarButton 
+          icon={Server} 
+          label={activeServersCount > 0 ? `MCP (${activeServersCount})` : "MCP Server"} 
+          onClick={() => openDialogHandler('mcp')} 
+        />
+        <ToolbarButton 
+          icon={Bot} 
+          label={installedAgentsCount > 0 ? `Agents (${installedAgentsCount})` : "AI Agents"} 
+          onClick={() => openDialogHandler('agents')} 
+        />
         <ToolbarButton icon={Chrome} label="Browser Control" onClick={() => openDialogHandler('browser')} />
         <ToolbarButton icon={Settings} label="Settings" onClick={() => openDialogHandler('settings')} />
       </div>
