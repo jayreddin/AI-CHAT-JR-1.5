@@ -1,11 +1,11 @@
 
-interface PuterAuth {
+export interface PuterAuth {
   signIn(): Promise<any>;
   signOut(): void;
   getUser(): Promise<any>;
 }
 
-interface PuterAI {
+export interface PuterAI {
   chat(
     prompt: string | any[],
     options?: { model?: string; stream?: boolean; tools?: any[] } | string
@@ -15,7 +15,7 @@ interface PuterAI {
   txt2speech(text: string): Promise<HTMLAudioElement>;
 }
 
-interface Puter {
+export interface Puter {
   auth: PuterAuth;
   ai: PuterAI;
   env: string;
@@ -27,5 +27,3 @@ declare global {
     puter: Puter;
   }
 }
-
-export {};

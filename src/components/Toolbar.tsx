@@ -20,6 +20,11 @@ import { ImageUploadDialog } from './dialogs/ImageUploadDialog';
 import { FileUploadDialog } from './dialogs/FileUploadDialog';
 import { KnowledgeBaseDialog } from './dialogs/KnowledgeBaseDialog';
 import { WebUrlDialog } from './dialogs/WebUrlDialog';
+import { ToolsDialog } from './dialogs/ToolsDialog';
+import { MCPServerDialog } from './dialogs/MCPServerDialog';
+import { AIAgentsDialog } from './dialogs/AIAgentsDialog';
+import { BrowserControlDialog } from './dialogs/BrowserControlDialog';
+import { SettingsDialog } from './dialogs/SettingsDialog';
 import { toast } from 'sonner';
 
 interface ToolbarProps {
@@ -61,32 +66,6 @@ const Toolbar: React.FC<ToolbarProps> = ({ show }) => {
     // In a real implementation, we would process the web content accordingly
   };
 
-  // Placeholder functions for toolbar actions that don't have dialogs yet
-  const handleTools = () => {
-    console.log('Tools clicked');
-    toast.info('Tools feature coming soon');
-  };
-
-  const handleMcpServer = () => {
-    console.log('MCP server clicked');
-    toast.info('MCP Server feature coming soon');
-  };
-
-  const handleAiAgents = () => {
-    console.log('AI agents clicked');
-    toast.info('AI Agents feature coming soon');
-  };
-
-  const handleBrowserControl = () => {
-    console.log('Browser control clicked');
-    toast.info('Browser Control feature coming soon');
-  };
-
-  const handleSettings = () => {
-    console.log('Settings clicked');
-    toast.info('Settings feature coming soon');
-  };
-
   return (
     <>
       <div 
@@ -100,11 +79,11 @@ const Toolbar: React.FC<ToolbarProps> = ({ show }) => {
         <ToolbarButton icon={FileUp} label="File Upload" onClick={() => openDialogHandler('file')} />
         <ToolbarButton icon={BookOpen} label="Knowledge Base" onClick={() => openDialogHandler('knowledge')} />
         <ToolbarButton icon={Globe} label="Web URL" onClick={() => openDialogHandler('weburl')} />
-        <ToolbarButton icon={Wrench} label="Tools" onClick={handleTools} />
-        <ToolbarButton icon={Server} label="MCP Server" onClick={handleMcpServer} />
-        <ToolbarButton icon={Bot} label="AI Agents" onClick={handleAiAgents} />
-        <ToolbarButton icon={Chrome} label="Browser Control" onClick={handleBrowserControl} />
-        <ToolbarButton icon={Settings} label="Settings" onClick={handleSettings} />
+        <ToolbarButton icon={Wrench} label="Tools" onClick={() => openDialogHandler('tools')} />
+        <ToolbarButton icon={Server} label="MCP Server" onClick={() => openDialogHandler('mcp')} />
+        <ToolbarButton icon={Bot} label="AI Agents" onClick={() => openDialogHandler('agents')} />
+        <ToolbarButton icon={Chrome} label="Browser Control" onClick={() => openDialogHandler('browser')} />
+        <ToolbarButton icon={Settings} label="Settings" onClick={() => openDialogHandler('settings')} />
       </div>
 
       {/* Dialogs */}
@@ -134,6 +113,31 @@ const Toolbar: React.FC<ToolbarProps> = ({ show }) => {
         open={openDialog === 'weburl'} 
         onOpenChange={(open) => open ? openDialogHandler('weburl') : closeDialogHandler()} 
         onAddToChat={handleAddWebContent}
+      />
+
+      <ToolsDialog
+        open={openDialog === 'tools'}
+        onOpenChange={(open) => open ? openDialogHandler('tools') : closeDialogHandler()}
+      />
+
+      <MCPServerDialog
+        open={openDialog === 'mcp'}
+        onOpenChange={(open) => open ? openDialogHandler('mcp') : closeDialogHandler()}
+      />
+
+      <AIAgentsDialog
+        open={openDialog === 'agents'}
+        onOpenChange={(open) => open ? openDialogHandler('agents') : closeDialogHandler()}
+      />
+
+      <BrowserControlDialog
+        open={openDialog === 'browser'}
+        onOpenChange={(open) => open ? openDialogHandler('browser') : closeDialogHandler()}
+      />
+
+      <SettingsDialog
+        open={openDialog === 'settings'}
+        onOpenChange={(open) => open ? openDialogHandler('settings') : closeDialogHandler()}
       />
     </>
   );
