@@ -1,9 +1,20 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Mic, Square } from 'lucide-react';
+import { Send, Mic, Square, Paperclip } from 'lucide-react';
 import { useChat } from '@/context/ChatContext';
+import { Attachment } from '@/hooks/useAttachments';
 
-const ChatInput: React.FC = () => {
+interface ChatInputProps {
+  attachments?: Attachment[];
+  onAddAttachment?: (attachment: Omit<Attachment, 'id'>) => string;
+  onClearAttachments?: () => void;
+}
+
+const ChatInput: React.FC<ChatInputProps> = ({ 
+  attachments = [], 
+  onAddAttachment,
+  onClearAttachments
+}) => {
   const { sendMessage, isMicActive, toggleMic, isLoggedIn, login, isStreaming, stopGeneration } = useChat();
   const [message, setMessage] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -17,9 +28,18 @@ const ChatInput: React.FC = () => {
   }, [message]);
 
   const handleSendMessage = () => {
-    if (!message.trim()) return;
+    if (!message.trim() && attachments.length === 0) return;
+    
+    // In a real implementation, you would include the attachments with the message
+    console.log('Sending message with attachments:', attachments);
+    
     sendMessage(message);
     setMessage('');
+    
+    // Clear attachments after sending
+    if (onClearAttachments) {
+      onClearAttachments();
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -57,6 +77,28 @@ const ChatInput: React.FC = () => {
           disabled={!isLoggedIn || isStreaming}
         />
         <div className="absolute right-2 bottom-2 flex items-center gap-1">
+          {onAddAttachment && (
+            <button
+              className="p-2 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+              title="Add attachment"
+              disabled={!isLoggedIn || isStreaming}
+              onClick={() => {
+                // This would normally open a file picker
+                // For this example, we'll just add a mock attachment
+                if (onAddAttachment) {
+                  onAddAttachment({
+                    type: 'image',
+                    content: 'https://picsum.photos/200',
+                    name: 'example.jpg',
+                    size: 1024 * 10,
+                    isBase64: false
+                  });
+                }
+              }}
+            >
+              <Paperclip size={18} />
+            </button>
+          )}
           <button
             onClick={toggleMic}
             className={`p-2 rounded-full ${
@@ -75,7 +117,7 @@ const ChatInput: React.FC = () => {
                 ? 'bg-primary text-white hover:bg-primary/80'
                 : 'bg-blue-500 text-white hover:bg-blue-600'
             } transition-colors`}
-            disabled={isLoggedIn && (!message.trim() || isStreaming)}
+            disabled={isLoggedIn && (!message.trim() && attachments.length === 0) || isStreaming}
           >
             <Send size={18} />
           </button>

@@ -1,6 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
-import ToolbarButton from './ToolbarButton';
+import React from 'react';
 import { 
   Plus, 
   Clock, 
@@ -15,132 +14,19 @@ import {
   Settings 
 } from 'lucide-react';
 import { useChat } from '@/context/ChatContext';
-import { HistoryDialog } from './dialogs/HistoryDialog';
-import { ImageUploadDialog } from './dialogs/ImageUploadDialog';
-import { FileUploadDialog } from './dialogs/FileUploadDialog';
-import { KnowledgeBaseDialog } from './dialogs/KnowledgeBaseDialog';
-import { WebUrlDialog } from './dialogs/WebUrlDialog';
-import { ToolsDialog } from './dialogs/ToolsDialog';
-import { MCPServerDialog } from './dialogs/MCPServerDialog';
-import { AIAgentsDialog } from './dialogs/AIAgentsDialog';
-import { BrowserControlDialog } from './dialogs/BrowserControlDialog';
-import { SettingsDialog } from './dialogs/SettingsDialog';
-import { toast } from 'sonner';
+import { useToolbarDialogs } from './toolbar/useToolbarDialogs';
+import { useToolbarCounts } from './toolbar/useToolbarCounts';
+import ToolbarButton from './toolbar/ToolbarButton';
+import ToolbarDialogs from './toolbar/ToolbarDialogs';
 
 interface ToolbarProps {
   show: boolean;
 }
 
 const Toolbar: React.FC<ToolbarProps> = ({ show }) => {
-  const { createNewChat, sendMessage } = useChat();
-  const [openDialog, setOpenDialog] = useState<string | null>(null);
-  
-  // Get counts of active tools, servers, and agents
-  const [activeToolsCount, setActiveToolsCount] = useState(0);
-  const [activeServersCount, setActiveServersCount] = useState(0);
-  const [installedAgentsCount, setInstalledAgentsCount] = useState(0);
-  
-  // Load counts from localStorage
-  useEffect(() => {
-    const loadStoredCounts = () => {
-      try {
-        // Load tools count
-        const storedTools = localStorage.getItem('ai-chat-tools');
-        if (storedTools) {
-          const tools = JSON.parse(storedTools);
-          const activeCount = tools.filter((tool: any) => tool.installed && tool.active).length;
-          setActiveToolsCount(activeCount);
-        }
-        
-        // Load MCP servers count
-        const storedServers = localStorage.getItem('ai-chat-mcp-servers');
-        if (storedServers) {
-          const servers = JSON.parse(storedServers);
-          const activeCount = servers.filter((server: any) => server.installed && server.active).length;
-          setActiveServersCount(activeCount);
-        }
-        
-        // Load AI agents count
-        const storedAgents = localStorage.getItem('ai-chat-agents');
-        if (storedAgents) {
-          const agents = JSON.parse(storedAgents);
-          const installedCount = agents.filter((agent: any) => agent.installed).length;
-          setInstalledAgentsCount(installedCount);
-        }
-      } catch (error) {
-        console.error('Error loading stored counts:', error);
-      }
-    };
-    
-    loadStoredCounts();
-    
-    // Listen for storage changes to update counts
-    window.addEventListener('storage', loadStoredCounts);
-    
-    return () => {
-      window.removeEventListener('storage', loadStoredCounts);
-    };
-  }, []);
-
-  // Function to open a specific dialog
-  const openDialogHandler = (dialogName: string) => {
-    setOpenDialog(dialogName);
-  };
-
-  // Function to close the current dialog
-  const closeDialogHandler = () => {
-    setOpenDialog(null);
-    
-    // Refresh counts after dialog closes
-    try {
-      // Update tools count
-      const storedTools = localStorage.getItem('ai-chat-tools');
-      if (storedTools) {
-        const tools = JSON.parse(storedTools);
-        const activeCount = tools.filter((tool: any) => tool.installed && tool.active).length;
-        setActiveToolsCount(activeCount);
-      }
-      
-      // Update MCP servers count
-      const storedServers = localStorage.getItem('ai-chat-mcp-servers');
-      if (storedServers) {
-        const servers = JSON.parse(storedServers);
-        const activeCount = servers.filter((server: any) => server.installed && server.active).length;
-        setActiveServersCount(activeCount);
-      }
-      
-      // Update AI agents count
-      const storedAgents = localStorage.getItem('ai-chat-agents');
-      if (storedAgents) {
-        const agents = JSON.parse(storedAgents);
-        const installedCount = agents.filter((agent: any) => agent.installed).length;
-        setInstalledAgentsCount(installedCount);
-      }
-    } catch (error) {
-      console.error('Error updating stored counts:', error);
-    }
-  };
-
-  // Handle image upload
-  const handleImageUpload = (imageData: string, isBase64: boolean) => {
-    console.log('Image uploaded:', isBase64 ? 'Base64 format' : 'URL format');
-    toast.success('Image added to context');
-    // In a real implementation, we would store this image and attach it to the next message
-  };
-
-  // Handle file upload
-  const handleFileUpload = (fileData: string, fileName: string) => {
-    console.log('File uploaded:', fileName);
-    toast.success('File added to context');
-    // In a real implementation, we would store this file and attach it to the next message
-  };
-
-  // Handle web URL content
-  const handleAddWebContent = (content: string) => {
-    console.log('Web content added:', content);
-    toast.success('Web content added to chat');
-    // In a real implementation, we would process the web content accordingly
-  };
+  const { createNewChat } = useChat();
+  const { openDialog, openDialogHandler, closeDialogHandler } = useToolbarDialogs();
+  const { activeToolsCount, activeServersCount, installedAgentsCount, refreshCounts } = useToolbarCounts();
 
   return (
     <>
@@ -157,75 +43,30 @@ const Toolbar: React.FC<ToolbarProps> = ({ show }) => {
         <ToolbarButton icon={Globe} label="Web URL" onClick={() => openDialogHandler('weburl')} />
         <ToolbarButton 
           icon={Wrench} 
-          label={activeToolsCount > 0 ? `Tools (${activeToolsCount})` : "Tools"} 
+          label="Tools" 
+          count={activeToolsCount > 0 ? activeToolsCount : undefined} 
           onClick={() => openDialogHandler('tools')} 
         />
         <ToolbarButton 
           icon={Server} 
-          label={activeServersCount > 0 ? `MCP (${activeServersCount})` : "MCP Server"} 
+          label="MCP Server" 
+          count={activeServersCount > 0 ? activeServersCount : undefined} 
           onClick={() => openDialogHandler('mcp')} 
         />
         <ToolbarButton 
           icon={Bot} 
-          label={installedAgentsCount > 0 ? `Agents (${installedAgentsCount})` : "AI Agents"} 
+          label="AI Agents" 
+          count={installedAgentsCount > 0 ? installedAgentsCount : undefined} 
           onClick={() => openDialogHandler('agents')} 
         />
         <ToolbarButton icon={Chrome} label="Browser Control" onClick={() => openDialogHandler('browser')} />
         <ToolbarButton icon={Settings} label="Settings" onClick={() => openDialogHandler('settings')} />
       </div>
 
-      {/* Dialogs */}
-      <HistoryDialog 
-        open={openDialog === 'history'} 
-        onOpenChange={(open) => open ? openDialogHandler('history') : closeDialogHandler()} 
-      />
-      
-      <ImageUploadDialog 
-        open={openDialog === 'image'} 
-        onOpenChange={(open) => open ? openDialogHandler('image') : closeDialogHandler()} 
-        onSubmit={handleImageUpload}
-      />
-      
-      <FileUploadDialog 
-        open={openDialog === 'file'} 
-        onOpenChange={(open) => open ? openDialogHandler('file') : closeDialogHandler()} 
-        onSubmit={handleFileUpload}
-      />
-      
-      <KnowledgeBaseDialog 
-        open={openDialog === 'knowledge'} 
-        onOpenChange={(open) => open ? openDialogHandler('knowledge') : closeDialogHandler()} 
-      />
-      
-      <WebUrlDialog 
-        open={openDialog === 'weburl'} 
-        onOpenChange={(open) => open ? openDialogHandler('weburl') : closeDialogHandler()} 
-        onAddToChat={handleAddWebContent}
-      />
-
-      <ToolsDialog
-        open={openDialog === 'tools'}
-        onOpenChange={(open) => open ? openDialogHandler('tools') : closeDialogHandler()}
-      />
-
-      <MCPServerDialog
-        open={openDialog === 'mcp'}
-        onOpenChange={(open) => open ? openDialogHandler('mcp') : closeDialogHandler()}
-      />
-
-      <AIAgentsDialog
-        open={openDialog === 'agents'}
-        onOpenChange={(open) => open ? openDialogHandler('agents') : closeDialogHandler()}
-      />
-
-      <BrowserControlDialog
-        open={openDialog === 'browser'}
-        onOpenChange={(open) => open ? openDialogHandler('browser') : closeDialogHandler()}
-      />
-
-      <SettingsDialog
-        open={openDialog === 'settings'}
-        onOpenChange={(open) => open ? openDialogHandler('settings') : closeDialogHandler()}
+      <ToolbarDialogs 
+        openDialog={openDialog} 
+        closeDialogHandler={closeDialogHandler} 
+        refreshCounts={refreshCounts}
       />
     </>
   );

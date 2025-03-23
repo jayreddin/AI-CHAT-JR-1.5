@@ -5,11 +5,24 @@ import ChatBubble from '@/components/ChatBubble';
 import ChatInput from '@/components/ChatInput';
 import Toolbar from '@/components/Toolbar';
 import Footer from '@/components/Footer';
+import AttachmentPreview from '@/components/AttachmentPreview';
 import { useChat } from '@/context/ChatContext';
+import { useAttachments } from '@/hooks/useAttachments';
 
 const Index = () => {
   const { currentChat, showToolbar, toggleToolbar } = useChat();
   const [initialized, setInitialized] = useState(false);
+  const {
+    attachments,
+    previewAttachment,
+    addAttachment,
+    removeAttachment,
+    clearAttachments,
+    showPreview,
+    closePreview,
+    nextPreview,
+    prevPreview
+  } = useAttachments();
 
   // Check if Puter.js is loaded
   useEffect(() => {
@@ -55,9 +68,24 @@ const Index = () => {
           <Toolbar show={showToolbar} />
         </div>
         
+        {/* Attachment preview */}
+        <AttachmentPreview 
+          attachments={attachments}
+          previewAttachment={previewAttachment}
+          onRemove={removeAttachment}
+          onPreview={showPreview}
+          onClosePreview={closePreview}
+          onNextPreview={nextPreview}
+          onPrevPreview={prevPreview}
+        />
+        
         {/* Chat input */}
         <div className="mt-auto">
-          <ChatInput />
+          <ChatInput 
+            attachments={attachments}
+            onAddAttachment={addAttachment}
+            onClearAttachments={clearAttachments}
+          />
         </div>
       </div>
       
