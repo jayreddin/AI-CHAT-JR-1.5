@@ -1,53 +1,9 @@
+
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
-
-// Define available AI models
-export type AIModel = {
-  id: string;
-  name: string;
-  provider: string;
-};
-
-// List of available models
-export const AVAILABLE_MODELS: AIModel[] = [
-  { id: 'gpt-4o-mini', name: 'GPT-4o Mini', provider: 'OpenAI' },
-  { id: 'gpt-4o', name: 'GPT-4o', provider: 'OpenAI' },
-  { id: 'o3-mini', name: 'O3 Mini', provider: 'OpenAI' },
-  { id: 'o1-mini', name: 'O1 Mini', provider: 'OpenAI' },
-  { id: 'claude-3-5-sonnet', name: 'Claude 3.5 Sonnet', provider: 'Anthropic' },
-  { id: 'claude-3-7-sonnet', name: 'Claude 3.7 Sonnet', provider: 'Anthropic' },
-  { id: 'deepseek-chat', name: 'DeepSeek Chat', provider: 'High-Flyer (DeepSeek)' },
-  { id: 'deepseek-reasoner', name: 'DeepSeek Reasoner', provider: 'High-Flyer (DeepSeek)' },
-  { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', provider: 'Google' },
-  { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', provider: 'Google' },
-  { id: 'meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo', name: 'Llama 3.1 8B', provider: 'Together.ai' },
-  { id: 'meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo', name: 'Llama 3.1 70B', provider: 'Together.ai' },
-  { id: 'meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo', name: 'Llama 3.1 405B', provider: 'Together.ai' },
-  { id: 'mistral-large-latest', name: 'Mistral Large', provider: 'Mistral AI' },
-  { id: 'pixtral-large-latest', name: 'Pixtral Large', provider: 'Mistral AI' },
-  { id: 'codestral-latest', name: 'Codestral', provider: 'Mistral AI' },
-  { id: 'google/gemma-2-27b-it', name: 'Gemma 2 27B', provider: 'Groq' },
-  { id: 'grok-beta', name: 'Grok Beta', provider: 'xAI' },
-];
-
-// Define message type
-export type MessageType = {
-  id: string;
-  content: string;
-  role: 'user' | 'assistant';
-  timestamp: Date;
-  model?: string;
-  isStreaming?: boolean;
-};
-
-// Define chat type
-export type ChatType = {
-  id: string;
-  title: string;
-  messages: MessageType[];
-  createdAt: Date;
-  updatedAt: Date;
-  model: AIModel;
-};
+import { AIModel, ChatType, MessageType } from '@/types/chat';
+import { AVAILABLE_MODELS } from '@/constants/models';
+import { generateId } from '@/utils/helpers';
+import { aiService } from '@/services/aiService';
 
 // Define chat context type
 type ChatContextType = {
@@ -59,6 +15,7 @@ type ChatContextType = {
   isStreaming: boolean;
   isMicActive: boolean;
   showToolbar: boolean;
+  streamingEnabled: boolean;
   createNewChat: () => void;
   setCurrentChat: (chatId: string) => void;
   sendMessage: (content: string) => Promise<void>;
@@ -72,6 +29,7 @@ type ChatContextType = {
   stopGeneration: () => void;
   toggleMic: () => void;
   toggleToolbar: () => void;
+  toggleStreamingMode: () => void;
 };
 
 // Create context with default values
@@ -84,6 +42,7 @@ const ChatContext = createContext<ChatContextType>({
   isStreaming: false,
   isMicActive: false,
   showToolbar: false,
+  streamingEnabled: false,
   createNewChat: () => {},
   setCurrentChat: () => {},
   sendMessage: async () => {},
@@ -97,6 +56,7 @@ const ChatContext = createContext<ChatContextType>({
   stopGeneration: () => {},
   toggleMic: () => {},
   toggleToolbar: () => {},
+  toggleStreamingMode: () => {},
 });
 
 // Create provider component
@@ -108,6 +68,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
   const [isMicActive, setIsMicActive] = useState<boolean>(false);
   const [showToolbar, setShowToolbar] = useState<boolean>(false);
+  const [streamingEnabled, setStreamingEnabled] = useState<boolean>(false);
 
   // Check if Puter is available and if user is logged in
   useEffect(() => {
@@ -149,6 +110,11 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  // Toggle streaming mode
+  const toggleStreamingMode = () => {
+    setStreamingEnabled(!streamingEnabled);
+  };
+
   // Send a message
   const sendMessage = async (content: string) => {
     if (!currentChat) {
@@ -176,7 +142,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setCurrentChatState(newChat);
     setChats(chats.map((c) => (c.id === newChat.id ? newChat : c)));
 
-    // Simulate AI response
+    // Send to AI service
     setIsStreaming(true);
 
     const assistantMessage: MessageType = {
@@ -197,49 +163,90 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setCurrentChatState(updatedChat);
     setChats(chats.map((c) => (c.id === updatedChat.id ? updatedChat : c)));
 
-    // Simulate streaming response
-    const response = `This is a simulated response from ${currentModel.name}. In a real implementation, this would call the Puter API to get a response from the selected AI model.`;
-    let streamedContent = '';
+    try {
+      const { message, stream } = await aiService.sendMessage(content, currentModel.id, streamingEnabled);
+      
+      if (streamingEnabled && stream) {
+        // Handle streaming response
+        let streamedContent = '';
+        
+        for await (const part of stream) {
+          if (!isStreaming) break; // Stop generation if requested
+          
+          streamedContent += part?.text || '';
+          
+          const updatedMessage = {
+            ...assistantMessage,
+            content: streamedContent,
+          };
 
-    for (let i = 0; i < response.length; i++) {
-      if (!isStreaming) break; // Stop generation if requested
+          const updatedChatWithResponse = {
+            ...updatedChat,
+            messages: updatedChat.messages.map((m) =>
+              m.id === assistantMessage.id ? updatedMessage : m
+            ),
+          };
 
-      await new Promise((resolve) => setTimeout(resolve, 20)); // Simulate streaming delay
-      streamedContent += response[i];
+          setCurrentChatState(updatedChatWithResponse);
+          setChats(chats.map((c) => (c.id === updatedChatWithResponse.id ? updatedChatWithResponse : c)));
+        }
+        
+        // Finalize streaming message
+        const finalMessage = {
+          ...assistantMessage,
+          content: streamedContent,
+          isStreaming: false,
+        };
 
-      const updatedMessage = {
+        const finalChat = {
+          ...updatedChat,
+          messages: updatedChat.messages.map((m) =>
+            m.id === assistantMessage.id ? finalMessage : m
+          ),
+        };
+
+        setCurrentChatState(finalChat);
+        setChats(chats.map((c) => (c.id === finalChat.id ? finalChat : c)));
+      } else {
+        // Handle non-streaming response
+        const finalMessage = {
+          ...assistantMessage,
+          content: message.content,
+          isStreaming: false,
+        };
+
+        const finalChat = {
+          ...updatedChat,
+          messages: updatedChat.messages.map((m) =>
+            m.id === assistantMessage.id ? finalMessage : m
+          ),
+        };
+
+        setCurrentChatState(finalChat);
+        setChats(chats.map((c) => (c.id === finalChat.id ? finalChat : c)));
+      }
+    } catch (error) {
+      console.error('Error in AI response:', error);
+      
+      // Update with error message
+      const errorMessage = {
         ...assistantMessage,
-        content: streamedContent,
+        content: 'Sorry, there was an error processing your request. Please try again.',
+        isStreaming: false,
       };
 
-      const updatedChatWithResponse = {
+      const errorChat = {
         ...updatedChat,
         messages: updatedChat.messages.map((m) =>
-          m.id === assistantMessage.id ? updatedMessage : m
+          m.id === assistantMessage.id ? errorMessage : m
         ),
       };
 
-      setCurrentChatState(updatedChatWithResponse);
-      setChats(chats.map((c) => (c.id === updatedChatWithResponse.id ? updatedChatWithResponse : c)));
+      setCurrentChatState(errorChat);
+      setChats(chats.map((c) => (c.id === errorChat.id ? errorChat : c)));
+    } finally {
+      setIsStreaming(false);
     }
-
-    // Finalize the message
-    const finalMessage = {
-      ...assistantMessage,
-      content: streamedContent,
-      isStreaming: false,
-    };
-
-    const finalChat = {
-      ...updatedChat,
-      messages: updatedChat.messages.map((m) =>
-        m.id === assistantMessage.id ? finalMessage : m
-      ),
-    };
-
-    setCurrentChatState(finalChat);
-    setChats(chats.map((c) => (c.id === finalChat.id ? finalChat : c)));
-    setIsStreaming(false);
   };
 
   // Update a message
@@ -375,6 +382,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         isStreaming,
         isMicActive,
         showToolbar,
+        streamingEnabled,
         createNewChat,
         setCurrentChat,
         sendMessage,
@@ -388,16 +396,12 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         stopGeneration,
         toggleMic,
         toggleToolbar,
+        toggleStreamingMode,
       }}
     >
       {children}
     </ChatContext.Provider>
   );
-};
-
-// Helper function to generate a unique ID
-const generateId = () => {
-  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 };
 
 // Custom hook to use the chat context
