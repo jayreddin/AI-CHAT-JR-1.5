@@ -1,20 +1,23 @@
 
 import React from 'react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { availableModels } from '@/constants/models';
+import { AVAILABLE_MODELS } from '@/constants/models';
 import { useChat } from '@/context/ChatContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const ModelSelector: React.FC = () => {
-  const { selectedModel, changeModel } = useChat();
+  const { currentModel, setModel } = useChat();
   const isMobile = useIsMobile();
 
   // Filter models if needed, e.g. by API key restriction, etc.
-  const filteredModels = availableModels;
+  const filteredModels = AVAILABLE_MODELS;
 
   return (
     <div className="w-full max-w-xs mx-auto">
-      <Select value={selectedModel} onValueChange={changeModel}>
+      <Select value={currentModel.id} onValueChange={(value) => {
+        const model = AVAILABLE_MODELS.find(m => m.id === value);
+        if (model) setModel(model);
+      }}>
         <SelectTrigger 
           className={`
             text-center h-auto py-1.5 px-3 font-medium
@@ -31,7 +34,7 @@ const ModelSelector: React.FC = () => {
               <SelectItem key={model.id} value={model.id} className="py-2">
                 <div className="flex flex-col">
                   <span className="font-medium">{model.name}</span>
-                  <span className="text-xs text-muted-foreground">{model.description}</span>
+                  <span className="text-xs text-muted-foreground">{model.provider}</span>
                 </div>
               </SelectItem>
             ))}

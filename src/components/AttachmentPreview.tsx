@@ -41,7 +41,7 @@ export const AttachmentThumbnail: React.FC<AttachmentThumbnailProps> = ({
         />
       ) : (
         <div className="h-full w-full flex items-center justify-center bg-gray-100">
-          <File className={isMobile ? "h-6 w-6" : "h-8 w-8"} className="text-gray-500" />
+          <File className={isMobile ? "h-6 w-6" : "h-8 w-8"} />
           <span className="absolute bottom-0 left-0 right-0 text-center text-xs truncate bg-white/80 p-0.5">
             {attachment.name.split('.').pop()}
           </span>
