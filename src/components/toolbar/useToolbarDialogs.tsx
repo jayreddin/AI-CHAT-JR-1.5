@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export const useToolbarDialogs = () => {
   const [openDialog, setOpenDialog] = useState<string | null>(null);
@@ -13,6 +13,18 @@ export const useToolbarDialogs = () => {
   const closeDialogHandler = () => {
     setOpenDialog(null);
   };
+
+  // Close dialog when ESC key is pressed
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && openDialog) {
+        closeDialogHandler();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [openDialog]);
   
   return {
     openDialog,

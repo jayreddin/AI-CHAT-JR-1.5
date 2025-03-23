@@ -16,6 +16,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(message.content);
   const [isHovered, setIsHovered] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
   const isUser = message.role === 'user';
 
   const handleCopy = () => {
@@ -60,14 +61,17 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
 
   return (
     <div
-      className={`relative mb-3 max-w-[85%] group ${
+      className={`relative mb-2 max-w-[80%] group ${
         isUser ? 'ml-auto' : 'mr-auto'
       }`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onFocus={() => setIsFocused(true)}
+      onBlur={() => setIsFocused(false)}
+      tabIndex={0}
     >
       <div
-        className={`px-3 py-2 rounded-xl border message-in shadow-sm ${
+        className={`px-3 py-2 rounded-xl border shadow-sm ${
           isUser
             ? 'bg-user border-user-border rounded-tr-none'
             : 'bg-ai border-ai-border rounded-tl-none'
@@ -126,7 +130,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
           <div
             className={`flex gap-1 mt-1 ${
               isUser ? 'justify-end' : 'justify-start'
-            } ${isHovered ? 'opacity-100' : 'opacity-0'} transition-opacity`}
+            } opacity-0 group-hover:opacity-100 focus-within:opacity-100 ${isFocused ? 'opacity-100' : ''} transition-opacity`}
           >
             {isUser ? (
               <>

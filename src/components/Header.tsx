@@ -12,19 +12,19 @@ const Header: React.FC = () => {
     <header className="p-3 border-b border-gray-200 flex items-center justify-between bg-white/80 backdrop-blur-sm sticky top-0 z-10">
       {/* Logo */}
       <div className="flex items-center">
-        <div className="flex flex-col items-center justify-center bg-gradient-to-r from-blue-600 to-blue-400 text-white px-3 py-1.5 rounded-xl shadow-sm">
+        <div className="flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 text-white px-3 py-1.5 rounded-xl shadow-sm">
           <div className="flex items-center">
             <span className="text-xl font-bold tracking-tight">JR</span>
-            <div className="flex flex-col ml-1.5 leading-none">
-              <span className="text-sm font-medium">AI</span>
-              <span className="text-xs">Chat</span>
+            <div className="relative ml-1.5 leading-none">
+              <span className="text-sm font-medium absolute -top-1 right-0">AI</span>
+              <span className="text-xs absolute top-2 right-0">Chat</span>
             </div>
           </div>
         </div>
       </div>
       
       {/* Model selector - larger and more prominent */}
-      <div className="flex-1 flex justify-center max-w-sm px-4">
+      <div className="flex-1 flex justify-center px-4 max-w-md">
         <ModelSelector />
       </div>
       

@@ -5,7 +5,7 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
+    --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
 
     --card: 0 0% 100%;
@@ -14,7 +14,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 210 100% 50%;
+    --primary: 221.2 83.2% 53.3%;
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
@@ -31,9 +31,15 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --ring: 221.2 83.2% 53.3%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
+    
+    /* Chat bubble colors */
+    --user-bg: 210 100% 97%;
+    --user-border: 210 100% 90%;
+    --ai-bg: 0 0% 100%;
+    --ai-border: 0 0% 90%;
   }
 
   .dark {
@@ -46,7 +52,7 @@
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 210 100% 50%;
+    --primary: 217.2 91.2% 59.8%;
     --primary-foreground: 222.2 47.4% 11.2%;
 
     --secondary: 217.2 32.6% 17.5%;
@@ -63,7 +69,13 @@
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --ring: 224.3 76.3% 48%;
+    
+    /* Chat bubble colors */
+    --user-bg: 217.2 32.6% 20%;
+    --user-border: 217.2 32.6% 25%;
+    --ai-bg: 222.2 47.4% 15%;
+    --ai-border: 222.2 47.4% 20%;
   }
 }
 
@@ -71,18 +83,31 @@
   * {
     @apply border-border;
   }
-
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
   }
+}
+
+/* Chat bubble styling */
+.bg-user {
+  background-color: hsl(var(--user-bg));
+}
+
+.border-user-border {
+  border-color: hsl(var(--user-border));
+}
+
+.bg-ai {
+  background-color: hsl(var(--ai-bg));
+}
+
+.border-ai-border {
+  border-color: hsl(var(--ai-border));
 }
 
 /* Hide scrollbar but keep functionality */
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
-  width: 0px;
-  background: transparent;
 }
 
 .hide-scrollbar {
@@ -92,82 +117,26 @@
 
 /* Glass morphism effect */
 .glass-morphism {
-  @apply bg-white bg-opacity-70 backdrop-blur-lg backdrop-filter border border-white border-opacity-20 shadow-glass dark:bg-gray-900/70 dark:border-gray-800/30;
+  @apply backdrop-blur-md bg-white/70 border border-gray-200/50 shadow-sm;
 }
 
-/* Animations for messages */
-.message-in {
-  animation: slide-in 0.3s ease forwards;
+.dark .glass-morphism {
+  @apply bg-gray-900/70 border-gray-700/50;
 }
 
-@keyframes slide-in {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Microphone pulse animation */
-.mic-recording {
-  animation: pulse-mic 1.5s infinite;
-}
-
-@keyframes pulse-mic {
-  0%, 100% {
-    background-color: rgba(239, 68, 68, 0.8);
+/* Animation for microphone recording */
+@keyframes pulse-recording {
+  0% {
+    transform: scale(1);
   }
   50% {
-    background-color: rgba(239, 68, 68, 0.5);
+    transform: scale(1.05);
   }
-}
-
-/* Dialog animations */
-.dialog-enter {
-  animation: dialog-in 0.3s ease forwards;
-}
-
-.dialog-exit {
-  animation: dialog-out 0.2s ease forwards;
-}
-
-@keyframes dialog-in {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
+  100% {
     transform: scale(1);
   }
 }
 
-@keyframes dialog-out {
-  from {
-    opacity: 1;
-    transform: scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-}
-
-/* Hover effects for buttons */
-.hover-scale {
-  transition: transform 0.2s ease;
-}
-
-.hover-scale:hover {
-  transform: scale(1.05);
-}
-
-/* Auto-sized dialogs */
-.auto-sized-dialog {
-  max-height: calc(100vh - 4rem);
-  max-width: calc(100vw - 2rem);
-  overflow: auto;
+.animate-pulse-recording {
+  animation: pulse-recording 1.5s infinite;
 }

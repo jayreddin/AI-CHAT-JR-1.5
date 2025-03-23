@@ -14,8 +14,9 @@ const ModelSelector: React.FC = () => {
   useEffect(() => {
     const updateWidth = () => {
       if (containerRef.current) {
-        const availableWidth = containerRef.current.parentElement?.offsetWidth || 0;
-        setWidth(Math.min(Math.max(availableWidth, 250), 400));
+        const parentWidth = containerRef.current.parentElement?.offsetWidth || 0;
+        // Set width to parent width with a min of 280px and max of 400px
+        setWidth(Math.min(Math.max(parentWidth, 280), 400));
       }
     };
 

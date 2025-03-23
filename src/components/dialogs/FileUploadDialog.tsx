@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { FileText, History, X } from "lucide-react";
+import { toast } from 'sonner';
 
 interface FileUploadDialogProps {
   open: boolean;
@@ -21,14 +22,21 @@ export function FileUploadDialog({
   const [fileName, setFileName] = useState<string>("");
   const [showHistory, setShowHistory] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<{name: string, content: string}[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setIsLoading(true);
       setFileName(file.name);
       const reader = new FileReader();
       reader.onload = () => {
         setSelectedFile(reader.result as string);
+        setIsLoading(false);
+      };
+      reader.onerror = () => {
+        toast.error("Error reading file");
+        setIsLoading(false);
       };
       reader.readAsDataURL(file);
     }
@@ -38,12 +46,37 @@ export function FileUploadDialog({
     if (selectedFile) {
       onSubmit(selectedFile, fileName);
       // Save to history
-      setUploadedFiles([...uploadedFiles, {name: fileName, content: selectedFile}]);
+      const historyItem = {name: fileName, content: selectedFile};
+      setUploadedFiles((prev) => {
+        // Check if file with same name already exists in history
+        const exists = prev.some(file => file.name === fileName);
+        if (exists) {
+          return prev.map(file => file.name === fileName ? historyItem : file);
+        } else {
+          return [...prev, historyItem];
+        }
+      });
+      localStorage.setItem('file-upload-history', JSON.stringify([...uploadedFiles, historyItem]));
       onOpenChange(false);
       setSelectedFile(null);
       setFileName("");
+      toast.success("File added successfully");
     }
   };
+
+  // Load history from localStorage
+  React.useEffect(() => {
+    if (open) {
+      try {
+        const history = localStorage.getItem('file-upload-history');
+        if (history) {
+          setUploadedFiles(JSON.parse(history));
+        }
+      } catch (error) {
+        console.error("Error loading file history:", error);
+      }
+    }
+  }, [open]);
 
   const selectFromHistory = (content: string, name: string) => {
     setSelectedFile(content);
@@ -62,9 +95,9 @@ export function FileUploadDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button 
             onClick={handleSubmit} 
-            disabled={!selectedFile}
+            disabled={!selectedFile || isLoading}
           >
-            Submit
+            {isLoading ? "Loading..." : "Submit"}
           </Button>
         </>
       }
