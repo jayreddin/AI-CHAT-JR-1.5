@@ -1,12 +1,67 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import React, { useState, useEffect } from 'react';
+import Header from '@/components/Header';
+import ChatBubble from '@/components/ChatBubble';
+import ChatInput from '@/components/ChatInput';
+import Toolbar from '@/components/Toolbar';
+import Footer from '@/components/Footer';
+import { useChat } from '@/context/ChatContext';
 
 const Index = () => {
+  const { currentChat, showToolbar, toggleToolbar } = useChat();
+  const [initialized, setInitialized] = useState(false);
+
+  // Check if Puter.js is loaded
+  useEffect(() => {
+    const checkPuter = () => {
+      if (window.puter) {
+        setInitialized(true);
+      } else {
+        setTimeout(checkPuter, 100);
+      }
+    };
+
+    checkPuter();
+  }, []);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
+    <div className="flex flex-col h-screen bg-gray-50">
+      <Header />
+      
+      <div 
+        className="flex-1 overflow-hidden flex flex-col p-4"
+        onClick={() => !showToolbar && toggleToolbar()}
+      >
+        {/* Chat messages */}
+        <div className="flex-1 overflow-y-auto hide-scrollbar p-2 flex flex-col-reverse">
+          {currentChat?.messages.map((message) => (
+            <ChatBubble key={message.id} message={message} />
+          ))}
+          
+          {currentChat?.messages.length === 0 && (
+            <div className="flex-1 flex items-center justify-center text-gray-500">
+              <div className="text-center max-w-md">
+                <h2 className="text-xl font-semibold mb-2">Welcome to AI Chat</h2>
+                <p className="text-sm text-gray-600">
+                  Start a conversation with your selected AI model. You can ask questions, get help with tasks, or just chat.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+        
+        {/* Toolbar */}
+        <div className="my-4 relative z-10">
+          <Toolbar show={showToolbar} />
+        </div>
+        
+        {/* Chat input */}
+        <div className="mt-auto">
+          <ChatInput />
+        </div>
       </div>
+      
+      <Footer />
     </div>
   );
 };
