@@ -10,6 +10,7 @@ export interface KnowledgeFile {
 
 export const useKnowledgeBase = () => {
   const [knowledgeFiles, setKnowledgeFiles] = useState<KnowledgeFile[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
   
   // Load knowledge base files from localStorage
   useEffect(() => {
@@ -39,6 +40,8 @@ export const useKnowledgeBase = () => {
     } else {
       setKnowledgeFiles(savedFiles);
     }
+    
+    setIsLoaded(true);
   }, []);
   
   // Add a new file to the knowledge base
@@ -73,10 +76,28 @@ export const useKnowledgeBase = () => {
     saveToStorage('knowledge-base-files', updatedFiles);
   };
   
+  // Get a file by name
+  const getKnowledgeFile = (name: string) => {
+    return knowledgeFiles.find(file => file.name === name);
+  };
+  
+  // Search files by partial name
+  const searchKnowledgeFiles = (query: string) => {
+    if (!query || query.trim() === '') return knowledgeFiles;
+    
+    const normalizedQuery = query.toLowerCase().trim();
+    return knowledgeFiles.filter(file => 
+      file.name.toLowerCase().includes(normalizedQuery)
+    );
+  };
+  
   return {
     knowledgeFiles,
+    isLoaded,
     addKnowledgeFile,
     removeKnowledgeFile,
-    updateKnowledgeFile
+    updateKnowledgeFile,
+    getKnowledgeFile,
+    searchKnowledgeFiles
   };
 };

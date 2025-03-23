@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useReducer, useEffect, useState, ReactNode } from 'react';
 import { ChatContextType, ChatType } from './types';
 import { AVAILABLE_MODELS } from '@/constants/models';
@@ -7,6 +6,43 @@ import { generateId } from '@/utils/helpers';
 import { toast } from 'sonner';
 import { chatReducer } from './chatReducer';
 import { loadFromStorage, saveToStorage } from '@/utils/storage';
+
+// Define the SpeechRecognition interface
+interface SpeechRecognitionEvent extends Event {
+  results: SpeechRecognitionResultList;
+  resultIndex: number;
+  error?: any;
+}
+
+interface SpeechRecognitionResultList {
+  length: number;
+  item(index: number): SpeechRecognitionResult;
+  [index: number]: SpeechRecognitionResult;
+}
+
+interface SpeechRecognitionResult {
+  length: number;
+  item(index: number): SpeechRecognitionAlternative;
+  [index: number]: SpeechRecognitionAlternative;
+  isFinal: boolean;
+}
+
+interface SpeechRecognitionAlternative {
+  transcript: string;
+  confidence: number;
+}
+
+interface SpeechRecognitionInterface extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  start: () => void;
+  stop: () => void;
+  onresult: (event: SpeechRecognitionEvent) => void;
+  onerror: (event: Event) => void;
+  onend: () => void;
+  onstart: () => void;
+}
 
 // Create context
 const ChatContext = createContext<ChatContextType>({
@@ -320,55 +356,14 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [recognition, setRecognition] = useState<any>(null);
   const [transcript, setTranscript] = useState('');
 
-  // Declare SpeechRecognition interface for TypeScript
-  interface SpeechRecognitionEvent extends Event {
-    results: SpeechRecognitionResultList;
-    resultIndex: number;
-    error?: any;
-  }
-
-  interface SpeechRecognitionResultList {
-    length: number;
-    item(index: number): SpeechRecognitionResult;
-    [index: number]: SpeechRecognitionResult;
-  }
-
-  interface SpeechRecognitionResult {
-    length: number;
-    item(index: number): SpeechRecognitionAlternative;
-    [index: number]: SpeechRecognitionAlternative;
-    isFinal: boolean;
-  }
-
-  interface SpeechRecognitionAlternative {
-    transcript: string;
-    confidence: number;
-  }
-  
-  interface SpeechRecognitionInterface extends EventTarget {
-    continuous: boolean;
-    interimResults: boolean;
-    lang: string;
-    start: () => void;
-    stop: () => void;
-    onresult: (event: SpeechRecognitionEvent) => void;
-    onerror: (event: Event) => void;
-    onend: () => void;
-    onstart: () => void;
-  }
-
-  interface SpeechRecognitionConstructor {
-    new (): SpeechRecognitionInterface;
-  }
-
   const activateSpeechToText = () => {
     try {
       // Request microphone access
       navigator.mediaDevices.getUserMedia({ audio: true })
         .then(() => {
           // Check if SpeechRecognition is available
-          const SpeechRecognition = window.SpeechRecognition || 
-            (window as any).webkitSpeechRecognition as SpeechRecognitionConstructor;
+          const SpeechRecognition = (window as any).SpeechRecognition || 
+            (window as any).webkitSpeechRecognition;
           
           if (SpeechRecognition) {
             const recognitionInstance = new SpeechRecognition();
@@ -405,7 +400,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             };
             
             recognitionInstance.onerror = (event) => {
-              console.error('Speech recognition error', event.error);
+              console.error('Speech recognition error', event);
               setIsMicActive(false);
             };
             

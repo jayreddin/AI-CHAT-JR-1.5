@@ -1,7 +1,9 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FileText } from 'lucide-react';
 import { useKnowledgeBase } from '@/hooks/useKnowledgeBase';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
+import { Button } from '@/components/ui/button';
 
 interface KnowledgeBaseSelectorProps {
   onSelect: (fileName: string) => void;
@@ -10,6 +12,12 @@ interface KnowledgeBaseSelectorProps {
 
 const KnowledgeBaseSelector: React.FC<KnowledgeBaseSelectorProps> = ({ onSelect, onClose }) => {
   const { knowledgeFiles } = useKnowledgeBase();
+  const [loaded, setLoaded] = useState(false);
+
+  // Force a re-render to ensure knowledgeFiles are loaded
+  useEffect(() => {
+    setLoaded(true);
+  }, []);
 
   return (
     <div className="absolute bottom-full left-0 mb-2 bg-white border border-gray-200 rounded-md shadow-md max-h-40 overflow-y-auto w-64 z-50">

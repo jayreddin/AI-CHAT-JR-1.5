@@ -1,43 +1,42 @@
 
 import React from 'react';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AVAILABLE_MODELS } from '@/constants/models';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useChat } from '@/context/chat/ChatProvider';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { AIModel } from '@/types/chat';
 
 const ModelSelector: React.FC = () => {
-  const { currentModel, setModel } = useChat();
-  const isMobile = useIsMobile();
-
-  // Filter models if needed
-  const filteredModels = AVAILABLE_MODELS;
+  const { currentModel, setModel, AVAILABLE_MODELS } = useChat();
 
   return (
-    <div className="w-full max-w-xs mx-auto">
-      <Select value={currentModel.id} onValueChange={(value) => {
-        const model = AVAILABLE_MODELS.find(m => m.id === value);
-        if (model) setModel(model);
-      }}>
+    <div className="w-40 md:w-48">
+      <Select
+        value={currentModel.id}
+        onValueChange={(id) => {
+          const model = AVAILABLE_MODELS.find((m) => m.id === id);
+          if (model) setModel(model);
+        }}
+      >
         <SelectTrigger 
-          className={`
-            model-selector-trigger text-center h-auto py-1.5 px-3
-            ${isMobile ? 'text-base' : 'text-xl font-semibold'}
-            bg-transparent
-          `}
+          className="h-9 border-none bg-transparent hover:bg-gray-100 focus:ring-0"
         >
-          <SelectValue placeholder="Select a model" className="mx-auto w-full text-center" />
+          <SelectValue className="text-center" placeholder="Select Model" />
         </SelectTrigger>
-        <SelectContent className="model-selector-content">
-          <SelectGroup>
-            {filteredModels.map((model) => (
-              <SelectItem key={model.id} value={model.id} className="py-2 model-selector-item">
-                <div className="flex flex-col items-center text-center w-full">
-                  <span className="font-medium">{model.name}</span>
-                  <span className="text-xs text-muted-foreground">{model.provider}</span>
-                </div>
-              </SelectItem>
-            ))}
-          </SelectGroup>
+        <SelectContent>
+          {AVAILABLE_MODELS.map((model) => (
+            <SelectItem
+              key={model.id}
+              value={model.id}
+              className="text-center"
+            >
+              {model.name}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
     </div>

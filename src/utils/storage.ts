@@ -1,105 +1,82 @@
 
 /**
- * Enhanced storage utility functions for persistent data management
+ * Storage utilities for persisting data in localStorage
  */
 
-// Type for user settings
-export interface UserSettings {
-  username?: string;
-  avatar?: string;
-  location?: string;
-  dateFormat?: string;
-  timeFormat?: string;
-  theme?: 'light' | 'dark' | 'system';
-  language?: string;
-}
-
-// Function to save data to localStorage
-export function saveToStorage<T>(key: string, data: T): void {
+// Function to load data from localStorage with proper typing
+export function loadFromStorage<T>(key: string, defaultValue: T): T {
   try {
-    localStorage.setItem(key, JSON.stringify(data));
+    if (typeof window === 'undefined') {
+      return defaultValue;
+    }
+    
+    const item = localStorage.getItem(`jr-ai-chat-${key}`);
+    
+    if (item === null) {
+      return defaultValue;
+    }
+    
+    return JSON.parse(item) as T;
   } catch (error) {
-    console.error(`Error saving ${key} to localStorage:`, error);
+    console.error(`Error loading "${key}" from storage:`, error);
+    return defaultValue;
   }
 }
 
-// Function to load data from localStorage
-export function loadFromStorage<T>(key: string, defaultValue: T): T {
+// Function to save data to localStorage
+export function saveToStorage<T>(key: string, value: T): void {
   try {
-    const savedData = localStorage.getItem(key);
-    return savedData ? JSON.parse(savedData) : defaultValue;
+    if (typeof window === 'undefined') {
+      return;
+    }
+    
+    localStorage.setItem(`jr-ai-chat-${key}`, JSON.stringify(value));
   } catch (error) {
-    console.error(`Error loading ${key} from localStorage:`, error);
-    return defaultValue;
+    console.error(`Error saving "${key}" to storage:`, error);
   }
 }
 
 // Function to remove data from localStorage
 export function removeFromStorage(key: string): void {
   try {
-    localStorage.removeItem(key);
+    if (typeof window === 'undefined') {
+      return;
+    }
+    
+    localStorage.removeItem(`jr-ai-chat-${key}`);
   } catch (error) {
-    console.error(`Error removing ${key} from localStorage:`, error);
+    console.error(`Error removing "${key}" from storage:`, error);
   }
 }
 
-// Get user settings from storage
-export function getUserSettings(): UserSettings {
-  return loadFromStorage<UserSettings>('userSettings', {});
-}
-
-// Save user settings to storage
-export function saveUserSettings(settings: UserSettings): void {
-  const currentSettings = getUserSettings();
-  saveToStorage('userSettings', { ...currentSettings, ...settings });
-}
-
-// Clear all application data
-export function clearAllData(): void {
+// Function to clear all app-related data from localStorage
+export function clearAllStorage(): void {
   try {
-    // List of keys to preserve (if any)
-    const keysToPreserve: string[] = [];
+    if (typeof window === 'undefined') {
+      return;
+    }
     
-    // Get all keys in localStorage
-    const allKeys = Object.keys(localStorage);
+    const keysToRemove: string[] = [];
     
-    // Remove all keys except those to preserve
-    allKeys.forEach(key => {
-      if (!keysToPreserve.includes(key)) {
-        localStorage.removeItem(key);
-      }
-    });
-    
-    console.log('All application data cleared');
-  } catch (error) {
-    console.error('Error clearing application data:', error);
-  }
-}
-
-// Function to get total storage usage
-export function getStorageUsage(): { used: number, total: number, percentage: number } {
-  try {
-    let totalSize = 0;
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key) {
-        const value = localStorage.getItem(key) || '';
-        totalSize += key.length + value.length;
+      if (key?.startsWith('jr-ai-chat-')) {
+        keysToRemove.push(key);
       }
     }
     
-    // Convert to MB (approximate)
-    const usedMB = totalSize / (1024 * 1024);
-    const totalMB = 5; // Most browsers limit localStorage to 5-10MB
-    const percentage = (usedMB / totalMB) * 100;
-    
-    return {
-      used: usedMB,
-      total: totalMB,
-      percentage: percentage
-    };
+    keysToRemove.forEach(key => localStorage.removeItem(key));
   } catch (error) {
-    console.error('Error calculating storage usage:', error);
-    return { used: 0, total: 5, percentage: 0 };
+    console.error('Error clearing all storage:', error);
   }
+}
+
+// Helper to save user settings
+export function saveUserSettings(settings: Record<string, any>): void {
+  saveToStorage('userSettings', settings);
+}
+
+// Helper to load user settings
+export function loadUserSettings<T>(defaultSettings: T): T {
+  return loadFromStorage<T>('userSettings', defaultSettings);
 }

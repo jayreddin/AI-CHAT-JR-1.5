@@ -8,6 +8,7 @@ import Footer from '@/components/Footer';
 import { useChat } from '@/context/chat/ChatProvider';
 import { useAttachments } from '@/hooks/useAttachments';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { MessageType } from '@/context/chat/types';
 
 const Index = () => {
   const { currentChat, showToolbar, toggleToolbar } = useChat();
@@ -44,7 +45,7 @@ const Index = () => {
         {/* Chat messages */}
         <div className="flex-1 overflow-y-auto hide-scrollbar p-2 flex flex-col-reverse">
           {currentChat?.messages.map((message) => (
-            <ChatBubble key={message.id} message={message} />
+            <ChatBubble key={message.id} message={message as MessageType} />
           ))}
           
           {currentChat?.messages.length === 0 && (

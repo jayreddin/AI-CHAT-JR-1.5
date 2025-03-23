@@ -4,7 +4,7 @@ import { AIModel } from '@/types/chat';
 export interface MessageType {
   id: string;
   content: string;
-  role: 'user' | 'assistant' | 'system';
+  role: 'user' | 'assistant';
   timestamp: Date;
   model?: string;
   isStreaming?: boolean;

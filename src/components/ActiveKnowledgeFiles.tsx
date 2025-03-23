@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { FileText } from 'lucide-react';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from './ui/hover-card';
 
 interface ActiveKnowledgeFilesProps {
   files: string[];
@@ -17,6 +18,7 @@ const ActiveKnowledgeFiles: React.FC<ActiveKnowledgeFilesProps> = ({ files, onRe
           <button 
             className="ml-1 text-blue-500 hover:text-blue-700"
             onClick={() => onRemove(file)}
+            aria-label="Remove knowledge file"
           >
             ×
           </button>
