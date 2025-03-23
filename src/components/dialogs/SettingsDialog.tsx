@@ -7,6 +7,7 @@ import { useSettings } from '@/hooks/useSettings';
 import { AppearanceTab } from './settings/AppearanceTab';
 import { AISettingsTab } from './settings/AISettingsTab';
 import { AdvancedSettingsTab } from './settings/AdvancedSettingsTab';
+import { AccountTab } from './settings/AccountTab';
 
 interface SettingsDialogProps {
   open: boolean;
@@ -32,9 +33,10 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ open, onOpenChan
       }
     >
       <Tabs defaultValue="appearance" className="space-y-4">
-        <TabsList className="grid grid-cols-3 w-full">
+        <TabsList className="grid grid-cols-4 w-full">
           <TabsTrigger value="appearance">Appearance</TabsTrigger>
           <TabsTrigger value="ai">AI Settings</TabsTrigger>
+          <TabsTrigger value="account">Account</TabsTrigger>
           <TabsTrigger value="advanced">Advanced</TabsTrigger>
         </TabsList>
         
@@ -44,6 +46,10 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ open, onOpenChan
         
         <TabsContent value="ai">
           <AISettingsTab settings={settings} setSettings={setSettings} />
+        </TabsContent>
+        
+        <TabsContent value="account">
+          <AccountTab settings={settings} setSettings={setSettings} />
         </TabsContent>
         
         <TabsContent value="advanced">

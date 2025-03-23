@@ -21,6 +21,13 @@ export interface AppSettings {
       enabled: boolean;
     };
   };
+  account: {
+    username: string;
+    avatar: string | null;
+    location: string;
+    dateFormat: string;
+    timeFormat: string;
+  };
 }
 
 const STORAGE_KEY = 'ai-chat-settings';
@@ -43,6 +50,13 @@ const defaultSettings: AppSettings = {
     imageToText: {
       enabled: true
     }
+  },
+  account: {
+    username: '',
+    avatar: null,
+    location: '',
+    dateFormat: 'MM/DD/YYYY',
+    timeFormat: '12h'
   }
 };
 

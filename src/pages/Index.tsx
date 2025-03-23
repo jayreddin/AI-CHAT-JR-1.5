@@ -56,7 +56,7 @@ const Index = () => {
           {currentChat?.messages.length === 0 && (
             <div className="flex-1 flex items-center justify-center text-gray-500">
               <div className="text-center max-w-md">
-                <h2 className="text-xl font-semibold mb-2">Welcome to AI Chat</h2>
+                <h2 className="text-xl font-semibold mb-2">Welcome to JR AI Chat</h2>
                 <p className="text-sm text-gray-600">
                   Start a conversation with your selected AI model. You can ask questions, get help with tasks, or just chat.
                 </p>

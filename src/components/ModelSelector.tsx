@@ -20,19 +20,19 @@ const ModelSelector: React.FC = () => {
       }}>
         <SelectTrigger 
           className={`
-            text-center h-auto py-1.5 px-3 font-medium
-            ${isMobile ? 'text-xs' : 'text-sm'}
+            text-center h-auto py-1.5 px-3 font-semibold
+            ${isMobile ? 'text-sm' : 'text-base'}
             bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200
             dark:from-blue-900/20 dark:to-indigo-900/20 dark:border-blue-800
           `}
         >
-          <SelectValue placeholder="Select a model" className="text-center" />
+          <SelectValue placeholder="Select a model" className="text-center mx-auto" />
         </SelectTrigger>
         <SelectContent className="max-h-80 overflow-y-auto">
           <SelectGroup>
             {filteredModels.map((model) => (
               <SelectItem key={model.id} value={model.id} className="py-2">
-                <div className="flex flex-col">
+                <div className="flex flex-col items-center text-center w-full">
                   <span className="font-medium">{model.name}</span>
                   <span className="text-xs text-muted-foreground">{model.provider}</span>
                 </div>

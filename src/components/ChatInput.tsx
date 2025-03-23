@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Mic, Square, Paperclip, Image, FileUp } from 'lucide-react';
+import { Send, Mic, Square, Paperclip, Image, FileUp, FileText } from 'lucide-react';
 import { useChat } from '@/context/ChatContext';
 import { Attachment } from '@/hooks/useAttachments';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -19,6 +19,10 @@ const ChatInput: React.FC<ChatInputProps> = ({
 }) => {
   const { sendMessage, isMicActive, toggleMic, isLoggedIn, login, isStreaming, stopGeneration } = useChat();
   const [message, setMessage] = useState('');
+  const [showKnowledgeBase, setShowKnowledgeBase] = useState(false);
+  const [cursorPosition, setCursorPosition] = useState(0);
+  const [knowledgeFiles, setKnowledgeFiles] = useState<{name: string, content: string}[]>([]);
+  const [activeKnowledgeFiles, setActiveKnowledgeFiles] = useState<string[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isMobile = useIsMobile();
 
@@ -30,14 +34,28 @@ const ChatInput: React.FC<ChatInputProps> = ({
     }
   }, [message]);
 
+  // Load knowledge base files from localStorage
+  useEffect(() => {
+    try {
+      const savedFiles = localStorage.getItem('knowledge-base-files');
+      if (savedFiles) {
+        setKnowledgeFiles(JSON.parse(savedFiles));
+      }
+    } catch (error) {
+      console.error('Error loading knowledge base files:', error);
+    }
+  }, []);
+
   const handleSendMessage = () => {
     if (!message.trim() && attachments.length === 0) return;
     
     // In a real implementation, you would include the attachments with the message
     console.log('Sending message with attachments:', attachments);
+    console.log('Active knowledge files:', activeKnowledgeFiles);
     
     sendMessage(message);
     setMessage('');
+    setActiveKnowledgeFiles([]);
     
     // Clear attachments after sending
     if (onClearAttachments) {
@@ -49,23 +67,53 @@ const ChatInput: React.FC<ChatInputProps> = ({
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
+    } else if (e.key === '!') {
+      // Show knowledge base files when user types "!"
+      setShowKnowledgeBase(true);
+      setCursorPosition(e.currentTarget.selectionStart);
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setMessage(e.target.value);
+    const newMessage = e.target.value;
+    setMessage(newMessage);
+    
+    // Check for "!" trigger
+    if (newMessage.includes('!') && !showKnowledgeBase) {
+      setShowKnowledgeBase(true);
+      setCursorPosition(e.target.selectionStart);
+    } else if (!newMessage.includes('!')) {
+      setShowKnowledgeBase(false);
+    }
   };
 
-  const handleAddAttachment = () => {
+  const handleAddAttachment = (type: 'image' | 'file') => {
     if (onAddAttachment) {
-      onAddAttachment({
-        type: 'image',
-        content: 'https://picsum.photos/200',
-        name: 'example.jpg',
-        size: 1024 * 10,
-        isBase64: false
-      });
+      if (type === 'image') {
+        onAddAttachment({
+          type: 'image',
+          content: 'https://picsum.photos/200',
+          name: 'example.jpg',
+          size: 1024 * 10,
+          isBase64: false
+        });
+      } else {
+        onAddAttachment({
+          type: 'file',
+          content: 'Example file content',
+          name: 'example.txt',
+          size: 1024 * 2,
+          isBase64: false
+        });
+      }
     }
+  };
+
+  const addKnowledgeFile = (fileName: string) => {
+    if (!activeKnowledgeFiles.includes(fileName)) {
+      setActiveKnowledgeFiles([...activeKnowledgeFiles, fileName]);
+    }
+    setShowKnowledgeBase(false);
   };
 
   return (
@@ -80,6 +128,23 @@ const ChatInput: React.FC<ChatInputProps> = ({
         </button>
       )}
 
+      {activeKnowledgeFiles.length > 0 && (
+        <div className="mb-2 flex flex-wrap gap-1">
+          {activeKnowledgeFiles.map((file, index) => (
+            <div key={index} className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full flex items-center">
+              <FileText size={12} className="mr-1" />
+              <span>{file}</span>
+              <button 
+                className="ml-1 text-blue-500 hover:text-blue-700"
+                onClick={() => setActiveKnowledgeFiles(activeKnowledgeFiles.filter(f => f !== file))}
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="relative flex items-end bg-white border border-gray-200 rounded-lg shadow-sm">
         <textarea
           ref={textareaRef}
@@ -91,6 +156,22 @@ const ChatInput: React.FC<ChatInputProps> = ({
           rows={1}
           disabled={!isLoggedIn || isStreaming}
         />
+        
+        {showKnowledgeBase && knowledgeFiles.length > 0 && (
+          <div className="absolute bottom-full left-0 mb-2 bg-white border border-gray-200 rounded-md shadow-md max-h-40 overflow-y-auto w-64">
+            {knowledgeFiles.map((file, index) => (
+              <button
+                key={index}
+                className="w-full text-left px-3 py-2 hover:bg-gray-100 flex items-center gap-2"
+                onClick={() => addKnowledgeFile(file.name)}
+              >
+                <FileText size={14} />
+                <span className="text-sm truncate">{file.name}</span>
+              </button>
+            ))}
+          </div>
+        )}
+        
         <div className="absolute right-2 bottom-2 flex items-center gap-1">
           {onAddAttachment && (
             <Popover>
@@ -107,14 +188,14 @@ const ChatInput: React.FC<ChatInputProps> = ({
                 <div className="grid gap-1">
                   <button 
                     className="flex items-center gap-2 px-3 py-2 hover:bg-accent rounded-md transition-colors"
-                    onClick={handleAddAttachment}
+                    onClick={() => handleAddAttachment('image')}
                   >
                     <Image size={16} />
                     <span>Add Image</span>
                   </button>
                   <button 
                     className="flex items-center gap-2 px-3 py-2 hover:bg-accent rounded-md transition-colors"
-                    onClick={handleAddAttachment}
+                    onClick={() => handleAddAttachment('file')}
                   >
                     <FileUp size={16} />
                     <span>Add File</span>
