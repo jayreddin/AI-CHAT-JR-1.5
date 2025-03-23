@@ -140,3 +140,29 @@
 .animate-pulse-recording {
   animation: pulse-recording 1.5s infinite;
 }
+
+/* Mobile styles */
+@media (max-width: 640px) {
+  .tooltip {
+    display: none;
+  }
+  
+  .dialog-content {
+    width: 95vw !important;
+    max-width: 95vw !important;
+    padding: 1rem !important;
+  }
+  
+  .dialog-content .dialog-header {
+    padding: 0.5rem 0 !important;
+  }
+  
+  .dialog-content .dialog-footer {
+    padding: 0.5rem 0 !important;
+  }
+  
+  .popover-content {
+    width: auto !important;
+    min-width: 120px !important;
+  }
+}

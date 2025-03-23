@@ -3,6 +3,7 @@ import React from 'react';
 import { X, ChevronLeft, ChevronRight, File } from 'lucide-react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Attachment } from '@/hooks/useAttachments';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface AttachmentThumbnailProps {
   attachment: Attachment;
@@ -15,6 +16,9 @@ export const AttachmentThumbnail: React.FC<AttachmentThumbnailProps> = ({
   onRemove, 
   onPreview 
 }) => {
+  const isMobile = useIsMobile();
+  const size = isMobile ? "h-12 w-12" : "h-16 w-16";
+  
   const handleClick = () => {
     onPreview(attachment.id);
   };
@@ -26,7 +30,7 @@ export const AttachmentThumbnail: React.FC<AttachmentThumbnailProps> = ({
 
   return (
     <div 
-      className="relative h-16 w-16 rounded overflow-hidden border border-gray-200 cursor-pointer group"
+      className={`relative ${size} rounded overflow-hidden border border-gray-200 cursor-pointer group`}
       onClick={handleClick}
     >
       {attachment.type === 'image' ? (
@@ -37,7 +41,7 @@ export const AttachmentThumbnail: React.FC<AttachmentThumbnailProps> = ({
         />
       ) : (
         <div className="h-full w-full flex items-center justify-center bg-gray-100">
-          <File className="h-8 w-8 text-gray-500" />
+          <File className={isMobile ? "h-6 w-6" : "h-8 w-8"} className="text-gray-500" />
           <span className="absolute bottom-0 left-0 right-0 text-center text-xs truncate bg-white/80 p-0.5">
             {attachment.name.split('.').pop()}
           </span>
@@ -75,11 +79,13 @@ export const AttachmentPreviewDialog: React.FC<AttachmentPreviewDialogProps> = (
   onPrev,
   hasMultiple
 }) => {
+  const isMobile = useIsMobile();
+  
   if (!attachment) return null;
 
   return (
     <Dialog open={!!attachment} onOpenChange={() => onClose()}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className={`${isMobile ? 'max-w-[95vw]' : 'max-w-3xl'}`}>
         <div className="relative">
           {attachment.type === 'image' ? (
             <img 
@@ -96,7 +102,7 @@ export const AttachmentPreviewDialog: React.FC<AttachmentPreviewDialogProps> = (
           )}
           
           <div className="flex justify-between items-center mt-4">
-            <span className="text-sm font-medium">{attachment.name}</span>
+            <span className="text-sm font-medium truncate">{attachment.name}</span>
             <span className="text-sm text-gray-500">
               {(attachment.size / 1024).toFixed(2)} KB
               {attachment.isBase64 && " (Base64)"}
@@ -109,13 +115,13 @@ export const AttachmentPreviewDialog: React.FC<AttachmentPreviewDialogProps> = (
                 className="absolute left-2 top-1/2 -translate-y-1/2 p-1 bg-black/50 text-white rounded-full hover:bg-black/70"
                 onClick={onPrev}
               >
-                <ChevronLeft size={24} />
+                <ChevronLeft size={isMobile ? 20 : 24} />
               </button>
               <button 
                 className="absolute right-2 top-1/2 -translate-y-1/2 p-1 bg-black/50 text-white rounded-full hover:bg-black/70"
                 onClick={onNext}
               >
-                <ChevronRight size={24} />
+                <ChevronRight size={isMobile ? 20 : 24} />
               </button>
             </>
           )}

@@ -1,6 +1,5 @@
 
 import React from "react";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,33 +8,42 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface DialogFormProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
   title: string;
   description?: string;
   children: React.ReactNode;
   footerActions?: React.ReactNode;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
 export function DialogForm({
-  open,
-  onOpenChange,
   title,
   description,
   children,
   footerActions,
+  open,
+  onOpenChange,
 }: DialogFormProps) {
+  const isMobile = useIsMobile();
+  
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent 
+        className={`${isMobile ? 'w-[95vw] max-h-[85vh]' : 'max-w-3xl max-h-[85vh]'} overflow-hidden flex flex-col`}
+      >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           {description && <DialogDescription>{description}</DialogDescription>}
         </DialogHeader>
-        <div className="py-4">{children}</div>
-        {footerActions && <DialogFooter>{footerActions}</DialogFooter>}
+        <div className="overflow-y-auto py-2 flex-1">{children}</div>
+        {footerActions && (
+          <DialogFooter className="mt-4 flex justify-end gap-2">
+            {footerActions}
+          </DialogFooter>
+        )}
       </DialogContent>
     </Dialog>
   );

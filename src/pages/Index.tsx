@@ -8,10 +8,12 @@ import Footer from '@/components/Footer';
 import AttachmentPreview from '@/components/AttachmentPreview';
 import { useChat } from '@/context/ChatContext';
 import { useAttachments } from '@/hooks/useAttachments';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Index = () => {
   const { currentChat, showToolbar, toggleToolbar } = useChat();
   const [initialized, setInitialized] = useState(false);
+  const isMobile = useIsMobile();
   const {
     attachments,
     previewAttachment,
@@ -42,7 +44,7 @@ const Index = () => {
       <Header />
       
       <div 
-        className="flex-1 overflow-hidden flex flex-col p-4"
+        className="flex-1 overflow-hidden flex flex-col p-2 md:p-4"
         onClick={() => !showToolbar && toggleToolbar()}
       >
         {/* Chat messages */}
@@ -64,7 +66,7 @@ const Index = () => {
         </div>
         
         {/* Toolbar */}
-        <div className="my-4 relative z-10">
+        <div className="my-2 md:my-4 relative z-10">
           <Toolbar show={showToolbar} />
         </div>
         

@@ -1,8 +1,10 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Mic, Square, Paperclip } from 'lucide-react';
+import { Send, Mic, Square, Paperclip, Image, FileUp } from 'lucide-react';
 import { useChat } from '@/context/ChatContext';
 import { Attachment } from '@/hooks/useAttachments';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 interface ChatInputProps {
   attachments?: Attachment[];
@@ -18,6 +20,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   const { sendMessage, isMicActive, toggleMic, isLoggedIn, login, isStreaming, stopGeneration } = useChat();
   const [message, setMessage] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const isMobile = useIsMobile();
 
   // Auto resize textarea
   useEffect(() => {
@@ -53,6 +56,18 @@ const ChatInput: React.FC<ChatInputProps> = ({
     setMessage(e.target.value);
   };
 
+  const handleAddAttachment = () => {
+    if (onAddAttachment) {
+      onAddAttachment({
+        type: 'image',
+        content: 'https://picsum.photos/200',
+        name: 'example.jpg',
+        size: 1024 * 10,
+        isBase64: false
+      });
+    }
+  };
+
   return (
     <div className="relative">
       {isStreaming && (
@@ -78,26 +93,35 @@ const ChatInput: React.FC<ChatInputProps> = ({
         />
         <div className="absolute right-2 bottom-2 flex items-center gap-1">
           {onAddAttachment && (
-            <button
-              className="p-2 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
-              title="Add attachment"
-              disabled={!isLoggedIn || isStreaming}
-              onClick={() => {
-                // This would normally open a file picker
-                // For this example, we'll just add a mock attachment
-                if (onAddAttachment) {
-                  onAddAttachment({
-                    type: 'image',
-                    content: 'https://picsum.photos/200',
-                    name: 'example.jpg',
-                    size: 1024 * 10,
-                    isBase64: false
-                  });
-                }
-              }}
-            >
-              <Paperclip size={18} />
-            </button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  className="p-2 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                  title="Add attachment"
+                  disabled={!isLoggedIn || isStreaming}
+                >
+                  <Paperclip size={isMobile ? 16 : 18} />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto" align="end">
+                <div className="grid gap-1">
+                  <button 
+                    className="flex items-center gap-2 px-3 py-2 hover:bg-accent rounded-md transition-colors"
+                    onClick={handleAddAttachment}
+                  >
+                    <Image size={16} />
+                    <span>Add Image</span>
+                  </button>
+                  <button 
+                    className="flex items-center gap-2 px-3 py-2 hover:bg-accent rounded-md transition-colors"
+                    onClick={handleAddAttachment}
+                  >
+                    <FileUp size={16} />
+                    <span>Add File</span>
+                  </button>
+                </div>
+              </PopoverContent>
+            </Popover>
           )}
           <button
             onClick={toggleMic}
@@ -108,7 +132,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
             } transition-colors`}
             disabled={!isLoggedIn || isStreaming}
           >
-            <Mic size={18} />
+            <Mic size={isMobile ? 16 : 18} />
           </button>
           <button
             onClick={isLoggedIn ? handleSendMessage : login}
@@ -119,12 +143,12 @@ const ChatInput: React.FC<ChatInputProps> = ({
             } transition-colors`}
             disabled={isLoggedIn && (!message.trim() && attachments.length === 0) || isStreaming}
           >
-            <Send size={18} />
+            <Send size={isMobile ? 16 : 18} />
           </button>
         </div>
       </div>
     </div>
   );
-};
+}
 
 export default ChatInput;

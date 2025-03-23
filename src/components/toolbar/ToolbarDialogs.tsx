@@ -10,6 +10,7 @@ import { MCPServerDialog } from '@/components/dialogs/MCPServerDialog';
 import { AIAgentsDialog } from '@/components/dialogs/AIAgentsDialog';
 import { BrowserControlDialog } from '@/components/dialogs/BrowserControlDialog';
 import { SettingsDialog } from '@/components/dialogs/SettingsDialog';
+import { ImageGenerationDialog } from '@/components/dialogs/ImageGenerationDialog';
 import { toast } from 'sonner';
 
 interface ToolbarDialogsProps {
@@ -101,6 +102,11 @@ const ToolbarDialogs: React.FC<ToolbarDialogsProps> = ({
 
       <SettingsDialog
         open={openDialog === 'settings'}
+        onOpenChange={(open) => open ? null : handleDialogClose()}
+      />
+
+      <ImageGenerationDialog
+        open={openDialog === 'imagegeneration'}
         onOpenChange={(open) => open ? null : handleDialogClose()}
       />
     </>
