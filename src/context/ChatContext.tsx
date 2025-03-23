@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 
 // Define available AI models
@@ -8,6 +7,7 @@ export type AIModel = {
   provider: string;
 };
 
+// List of available models
 export const AVAILABLE_MODELS: AIModel[] = [
   { id: 'gpt-4o-mini', name: 'GPT-4o Mini', provider: 'OpenAI' },
   { id: 'gpt-4o', name: 'GPT-4o', provider: 'OpenAI' },
@@ -54,6 +54,7 @@ type ChatContextType = {
   chats: ChatType[];
   currentChat: ChatType | null;
   currentModel: AIModel;
+  AVAILABLE_MODELS: AIModel[];
   isLoggedIn: boolean;
   isStreaming: boolean;
   isMicActive: boolean;
@@ -78,6 +79,7 @@ const ChatContext = createContext<ChatContextType>({
   chats: [],
   currentChat: null,
   currentModel: AVAILABLE_MODELS[0],
+  AVAILABLE_MODELS: AVAILABLE_MODELS,
   isLoggedIn: false,
   isStreaming: false,
   isMicActive: false,
@@ -368,6 +370,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         chats,
         currentChat,
         currentModel,
+        AVAILABLE_MODELS,
         isLoggedIn,
         isStreaming,
         isMicActive,
