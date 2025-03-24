@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useChat } from '@/context/chat/ChatProvider';
 import { RefreshCw, Trash2, FileText, Copy, Edit } from 'lucide-react';
@@ -7,12 +8,6 @@ import { Button } from '@/components/ui/button';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { toast } from 'sonner';
 import CodeBlock from './CodeBlock';
-
-interface MarkdownCodeProps extends React.HTMLAttributes<HTMLElement> {
-  inline?: boolean;
-  className?: string;
-  children: React.ReactNode[];
-}
 
 interface ChatBubbleProps {
   message: {
@@ -30,11 +25,10 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
   const { deleteMessage, resendMessage, retryMessage } = useChat();
   const isMobile = useIsMobile();
   const isUser = message.role === 'user';
-  const [editedContent, setEditedContent] = useState(message.content);
-
+  
   // Process the message content to ensure it's a string
-  const content = typeof editedContent === 'string' ? editedContent : 
-                 (editedContent ? JSON.stringify(editedContent) : '');
+  const content = typeof message.content === 'string' ? message.content : 
+                 (message.content ? JSON.stringify(message.content) : '');
 
   // Format timestamp
   const formattedTime = new Date(message.timestamp).toLocaleTimeString([], {
@@ -47,34 +41,8 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
     toast.success("Message copied to clipboard");
   };
 
-  const updateCodeBlock = (newCode: string) => {
-    const updatedContent = content.replace(/```[\s\S]*?```/, `\`\`\`\n${newCode}\n\`\`\``);
-    setEditedContent(updatedContent);
-  };
-
-  // Custom components for markdown rendering
-  const markdownComponents = {
-    code: ({ inline, className, children, ...props }: MarkdownCodeProps) => {
-      const match = /language-(\w+)/.exec(className || '');
-      const language = match ? match[1] : '';
-
-      return !inline ? (
-        <CodeBlock
-          code={String(children).replace(/\n$/, '')}
-          language={language}
-          isStreaming={message.isStreaming}
-          onUpdate={isUser ? undefined : updateCodeBlock}
-        />
-      ) : (
-        <code className={className} {...props}>
-          {children}
-        </code>
-      );
-    }
-  };
-
   return (
-    <div className={`flex mb-8 ${isUser ? 'justify-end' : 'justify-start'} chat-message-container group`}>
+    <div className={`flex mb-8 ${isUser ? 'justify-end' : 'justify-start'} chat-message-container`}>
       <div
         className={`relative max-w-[85%] p-3 rounded-lg ${
           isUser
@@ -86,12 +54,12 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
           <div className="whitespace-pre-wrap break-words text-sm">{content}</div>
         ) : (
           <div className="markdown-wrapper text-sm">
-            {message.isStreaming && content === '' ? (
+            {message.isStreaming && message.content === '' ? (
               <div className="flex items-center">
                 <div className="animate-pulse">AI is thinking...</div>
               </div>
             ) : (
-              <Markdown components={markdownComponents}>{content}</Markdown>
+              <Markdown>{content}</Markdown>
             )}
             
             {message.reasoningContext && (
@@ -117,33 +85,33 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
       </div>
 
       {/* Message action buttons - positioned below the bubble */}
-      <div className={`${isUser ? 'user-message-actions' : 'ai-message-actions'} flex gap-1 absolute -bottom-6 opacity-0 group-hover:opacity-100 transition-opacity`}>
+      <div className={isUser ? 'user-message-actions' : 'ai-message-actions'}>
         {isUser ? (
           <>
             <button
               onClick={() => {/* Handle edit (placeholder) */}}
-              className="message-action-button hover:bg-gray-100 dark:hover:bg-gray-800 p-1 rounded"
+              className="message-action-button"
               title="Edit message"
             >
               <Edit size={14} />
             </button>
             <button
               onClick={() => resendMessage(message.id)}
-              className="message-action-button hover:bg-gray-100 dark:hover:bg-gray-800 p-1 rounded"
+              className="message-action-button"
               title="Resend message"
             >
               <RefreshCw size={14} />
             </button>
             <button
               onClick={copyMessageToClipboard}
-              className="message-action-button hover:bg-gray-100 dark:hover:bg-gray-800 p-1 rounded"
+              className="message-action-button"
               title="Copy message"
             >
               <Copy size={14} />
             </button>
             <button
               onClick={() => deleteMessage(message.id)}
-              className="message-action-button hover:bg-gray-100 dark:hover:bg-gray-800 p-1 rounded text-red-500"
+              className="message-action-button"
               title="Delete message"
             >
               <Trash2 size={14} />
@@ -153,21 +121,21 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
           <>
             <button
               onClick={() => retryMessage(message.id)}
-              className="message-action-button hover:bg-gray-100 dark:hover:bg-gray-800 p-1 rounded"
+              className="message-action-button"
               title="Regenerate response"
             >
               <RefreshCw size={14} />
             </button>
             <button
               onClick={copyMessageToClipboard}
-              className="message-action-button hover:bg-gray-100 dark:hover:bg-gray-800 p-1 rounded"
+              className="message-action-button"
               title="Copy to clipboard"
             >
               <Copy size={14} />
             </button>
             <button
               onClick={() => deleteMessage(message.id)}
-              className="message-action-button hover:bg-gray-100 dark:hover:bg-gray-800 p-1 rounded text-red-500"
+              className="message-action-button"
               title="Delete message"
             >
               <Trash2 size={14} />

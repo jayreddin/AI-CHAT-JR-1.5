@@ -37,7 +37,7 @@ const ChatInputBox: React.FC<ChatInputBoxProps> = ({
   // Speech to text integration
   const { isListening, error, toggleListening } = useSpeechToText({
     onTranscript: (text) => {
-      setMessage(message + (message ? ' ' : '') + text);
+      setMessage((prev) => prev + (prev ? ' ' : '') + text);
     },
     continuous: true
   });

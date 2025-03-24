@@ -8,12 +8,6 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/h
 import { toast } from 'sonner';
 import CodeBlock from './CodeBlock';
 
-interface MarkdownCodeProps extends React.HTMLAttributes<HTMLElement> {
-  inline?: boolean;
-  className?: string;
-  children: React.ReactNode[];
-}
-
 interface ChatBubbleProps {
   message: {
     id: string;
@@ -54,7 +48,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
 
   // Custom components for markdown rendering
   const markdownComponents = {
-    code: ({ inline, className, children, ...props }: MarkdownCodeProps) => {
+    code: ({ node, inline, className, children, ...props }: any) => {
       const match = /language-(\w+)/.exec(className || '');
       const language = match ? match[1] : '';
 
@@ -63,7 +57,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
           code={String(children).replace(/\n$/, '')}
           language={language}
           isStreaming={message.isStreaming}
-          onUpdate={isUser ? undefined : updateCodeBlock}
+          onUpdate={updateCodeBlock}
         />
       ) : (
         <code className={className} {...props}>
@@ -74,7 +68,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
   };
 
   return (
-    <div className={`flex mb-8 ${isUser ? 'justify-end' : 'justify-start'} chat-message-container group`}>
+    <div className={`flex mb-8 ${isUser ? 'justify-end' : 'justify-start'} chat-message-container`}>
       <div
         className={`relative max-w-[85%] p-3 rounded-lg ${
           isUser
@@ -103,80 +97,3 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
                   </Button>
                 </HoverCardTrigger>
                 <HoverCardContent className="w-80 text-xs bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
-                  <div className="font-mono whitespace-pre-wrap">{message.reasoningContext}</div>
-                </HoverCardContent>
-              </HoverCard>
-            )}
-          </div>
-        )}
-        
-        <div className="text-xs opacity-70 mt-1 text-right">
-          {message.model ? `${message.model} · ` : ''}
-          {formattedTime}
-        </div>
-      </div>
-
-      {/* Message action buttons - positioned below the bubble */}
-      <div className={`${isUser ? 'user-message-actions' : 'ai-message-actions'} flex gap-1 absolute -bottom-6 opacity-0 group-hover:opacity-100 transition-opacity`}>
-        {isUser ? (
-          <>
-            <button
-              onClick={() => {/* Handle edit (placeholder) */}}
-              className="message-action-button hover:bg-gray-100 dark:hover:bg-gray-800 p-1 rounded"
-              title="Edit message"
-            >
-              <Edit size={14} />
-            </button>
-            <button
-              onClick={() => resendMessage(message.id)}
-              className="message-action-button hover:bg-gray-100 dark:hover:bg-gray-800 p-1 rounded"
-              title="Resend message"
-            >
-              <RefreshCw size={14} />
-            </button>
-            <button
-              onClick={copyMessageToClipboard}
-              className="message-action-button hover:bg-gray-100 dark:hover:bg-gray-800 p-1 rounded"
-              title="Copy message"
-            >
-              <Copy size={14} />
-            </button>
-            <button
-              onClick={() => deleteMessage(message.id)}
-              className="message-action-button hover:bg-gray-100 dark:hover:bg-gray-800 p-1 rounded text-red-500"
-              title="Delete message"
-            >
-              <Trash2 size={14} />
-            </button>
-          </>
-        ) : (
-          <>
-            <button
-              onClick={() => retryMessage(message.id)}
-              className="message-action-button hover:bg-gray-100 dark:hover:bg-gray-800 p-1 rounded"
-              title="Regenerate response"
-            >
-              <RefreshCw size={14} />
-            </button>
-            <button
-              onClick={copyMessageToClipboard}
-              className="message-action-button hover:bg-gray-100 dark:hover:bg-gray-800 p-1 rounded"
-              title="Copy to clipboard"
-            >
-              <Copy size={14} />
-            </button>
-            <button
-              onClick={() => deleteMessage(message.id)}
-              className="message-action-button hover:bg-gray-100 dark:hover:bg-gray-800 p-1 rounded text-red-500"
-              title="Delete message"
-            >
-              <Trash2 size={14} />
-            </button>
-          </>
-        )}
-      </div>
-    </div>
-  );
-};
-
-export default ChatBubble;

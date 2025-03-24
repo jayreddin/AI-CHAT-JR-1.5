@@ -2,17 +2,12 @@ import React, { useState } from 'react';
 import { useChat } from '@/context/chat/ChatProvider';
 import { RefreshCw, Trash2, FileText, Copy, Edit } from 'lucide-react';
 import Markdown from 'react-markdown';
+import { Element } from 'hast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { toast } from 'sonner';
 import CodeBlock from './CodeBlock';
-
-interface MarkdownCodeProps extends React.HTMLAttributes<HTMLElement> {
-  inline?: boolean;
-  className?: string;
-  children: React.ReactNode[];
-}
 
 interface ChatBubbleProps {
   message: {
@@ -54,7 +49,13 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
 
   // Custom components for markdown rendering
   const markdownComponents = {
-    code: ({ inline, className, children, ...props }: MarkdownCodeProps) => {
+    code: ({ node, inline, className, children, ...props }: {
+      node: any;
+      inline?: boolean;
+      className?: string;
+      children: React.ReactNode[];
+      [key: string]: any;
+    }) => {
       const match = /language-(\w+)/.exec(className || '');
       const language = match ? match[1] : '';
 
@@ -74,7 +75,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
   };
 
   return (
-    <div className={`flex mb-8 ${isUser ? 'justify-end' : 'justify-start'} chat-message-container group`}>
+    <div className={`flex mb-8 ${isUser ? 'justify-end' : 'justify-start'} chat-message-container`}>
       <div
         className={`relative max-w-[85%] p-3 rounded-lg ${
           isUser

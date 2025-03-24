@@ -22,8 +22,8 @@ const ModelSelector: React.FC = () => {
           if (model) setModel(model);
         }}
       >
-        <SelectTrigger
-          className="h-9 border-none bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 focus:ring-0 text-center model-selector-trigger text-base md:text-lg font-medium"
+        <SelectTrigger 
+          className="h-9 border-none bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 focus:ring-0 text-center model-selector-trigger"
         >
           <SelectValue placeholder="Select Model" className="select-value-center" />
         </SelectTrigger>

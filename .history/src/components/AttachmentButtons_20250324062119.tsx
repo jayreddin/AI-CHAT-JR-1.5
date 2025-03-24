@@ -68,10 +68,7 @@ const AttachmentButtons: React.FC<AttachmentButtonsProps> = ({
             </button>
             <button 
               className="flex items-center gap-2 px-3 py-2 hover:bg-accent rounded-md transition-colors"
-              onClick={() => {
-                setShowFileDialog(true);
-                setIsPopoverOpen(false);
-              }}
+              onClick={handleAddFile}
             >
               <FileUp size={16} />
               <span>Add File</span>
@@ -84,12 +81,6 @@ const AttachmentButtons: React.FC<AttachmentButtonsProps> = ({
         open={showImageDialog}
         onOpenChange={setShowImageDialog}
         onSubmit={handleImageSubmit}
-      />
-
-      <FileUploadDialog
-        open={showFileDialog}
-        onOpenChange={setShowFileDialog}
-        onSubmit={handleFileSubmit}
       />
     </>
   );

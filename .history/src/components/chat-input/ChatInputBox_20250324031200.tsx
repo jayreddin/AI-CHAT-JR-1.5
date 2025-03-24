@@ -1,8 +1,8 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Mic, Square, Sparkles } from 'lucide-react';
 import { useChat } from '@/context/chat/ChatProvider';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useSpeechToText } from '@/hooks/useSpeechToText';
 import { toast } from 'sonner';
 
 interface ChatInputBoxProps {
@@ -30,23 +30,9 @@ const ChatInputBox: React.FC<ChatInputBoxProps> = ({
   setShowServerSelector,
   setCursorPosition,
 }) => {
-  const { isLoggedIn, login, isStreaming, stopGeneration } = useChat();
+  const { isMicActive, toggleMic, isLoggedIn, login, isStreaming, stopGeneration } = useChat();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isMobile = useIsMobile();
-
-  // Speech to text integration
-  const { isListening, error, toggleListening } = useSpeechToText({
-    onTranscript: (text) => {
-      setMessage(message + (message ? ' ' : '') + text);
-    },
-    continuous: true
-  });
-
-  useEffect(() => {
-    if (error) {
-      toast.error(`Speech recognition error: ${error}`);
-    }
-  }, [error]);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -54,6 +40,19 @@ const ChatInputBox: React.FC<ChatInputBoxProps> = ({
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
   }, [message]);
+
+  useEffect(() => {
+    const handleSpeechTranscript = (event: Event) => {
+      const customEvent = event as CustomEvent<{ transcript: string }>;
+      setMessage(customEvent.detail.transcript);
+    };
+    
+    document.addEventListener('speech-transcript', handleSpeechTranscript);
+    
+    return () => {
+      document.removeEventListener('speech-transcript', handleSpeechTranscript);
+    };
+  }, [setMessage]);
 
   return (
     <div className="relative flex items-end bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
@@ -70,14 +69,14 @@ const ChatInputBox: React.FC<ChatInputBoxProps> = ({
       
       <div className="absolute right-2 bottom-2 flex items-center gap-1">
         <button
-          onClick={toggleListening}
+          onClick={toggleMic}
           className={`p-2 rounded-full ${
-            isListening
-              ? 'bg-red-500 text-white animate-pulse'
+            isMicActive
+              ? 'bg-red-500 text-white animate-pulse-recording'
               : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
           } transition-colors`}
           disabled={!isLoggedIn || isStreaming}
-          title={isListening ? "Stop recording" : "Start voice input"}
+          title="Voice input"
         >
           <Mic size={isMobile ? 16 : 18} />
         </button>

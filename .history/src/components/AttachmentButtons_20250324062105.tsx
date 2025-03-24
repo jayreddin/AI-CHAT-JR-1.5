@@ -17,7 +17,6 @@ const AttachmentButtons: React.FC<AttachmentButtonsProps> = ({
 }) => {
   const isMobile = useIsMobile();
   const [showImageDialog, setShowImageDialog] = useState(false);
-  const [showFileDialog, setShowFileDialog] = useState(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
   const handleImageSubmit = (content: string, isBase64: boolean) => {
@@ -31,13 +30,13 @@ const AttachmentButtons: React.FC<AttachmentButtonsProps> = ({
     setIsPopoverOpen(false);
   };
 
-  const handleFileSubmit = (content: string, fileName: string) => {
+  const handleAddFile = () => {
     onAddAttachment({
       type: 'file',
-      content,
-      name: fileName,
-      size: content.length,
-      isBase64: true
+      content: 'Example file content',
+      name: 'example.txt',
+      size: 1024 * 2,
+      isBase64: false
     });
     setIsPopoverOpen(false);
   };
@@ -68,10 +67,7 @@ const AttachmentButtons: React.FC<AttachmentButtonsProps> = ({
             </button>
             <button 
               className="flex items-center gap-2 px-3 py-2 hover:bg-accent rounded-md transition-colors"
-              onClick={() => {
-                setShowFileDialog(true);
-                setIsPopoverOpen(false);
-              }}
+              onClick={handleAddFile}
             >
               <FileUp size={16} />
               <span>Add File</span>
@@ -84,12 +80,6 @@ const AttachmentButtons: React.FC<AttachmentButtonsProps> = ({
         open={showImageDialog}
         onOpenChange={setShowImageDialog}
         onSubmit={handleImageSubmit}
-      />
-
-      <FileUploadDialog
-        open={showFileDialog}
-        onOpenChange={setShowFileDialog}
-        onSubmit={handleFileSubmit}
       />
     </>
   );
