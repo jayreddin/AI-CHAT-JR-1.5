@@ -8,7 +8,7 @@ const Logo: React.FC = () => {
   return (
     <>
       <button 
-        className="app-logo"
+        className="app-logo focus:outline-none focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary/70"
         onClick={() => setShowQRDialog(true)}
         title="Open Mobile QR"
       >

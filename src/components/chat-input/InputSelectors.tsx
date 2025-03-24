@@ -12,7 +12,9 @@ interface InputSelectorsProps {
   setShowKnowledgeBase: (show: boolean) => void;
   setShowToolSelector: (show: boolean) => void;
   setShowServerSelector: (show: boolean) => void;
-  setMessage: (message: string) => void;
+  setMessage: (message: string | ((prev: string) => string)) => void;
+  message: string;
+  cursorPosition: number;
 }
 
 const InputSelectors: React.FC<InputSelectorsProps> = ({
@@ -23,7 +25,9 @@ const InputSelectors: React.FC<InputSelectorsProps> = ({
   setShowKnowledgeBase,
   setShowToolSelector,
   setShowServerSelector,
-  setMessage
+  setMessage,
+  message,
+  cursorPosition
 }) => {
   return (
     <>
@@ -37,7 +41,10 @@ const InputSelectors: React.FC<InputSelectorsProps> = ({
       {showToolSelector && (
         <ToolSelector 
           onSelect={(tool) => {
-            setMessage((prev) => prev + tool + ' ');
+            // Replace the ! character with the selected tool
+            const beforeTrigger = message.substring(0, message.lastIndexOf('!'));
+            const afterTrigger = message.substring(message.lastIndexOf('!') + 1);
+            setMessage(beforeTrigger + tool + ' ' + afterTrigger);
             setShowToolSelector(false);
           }}
           onClose={() => setShowToolSelector(false)}
@@ -47,7 +54,10 @@ const InputSelectors: React.FC<InputSelectorsProps> = ({
       {showServerSelector && (
         <ServerSelector 
           onSelect={(server) => {
-            setMessage((prev) => prev + server + ' ');
+            // Replace the $ character with the selected server
+            const beforeTrigger = message.substring(0, message.lastIndexOf('$'));
+            const afterTrigger = message.substring(message.lastIndexOf('$') + 1);
+            setMessage(beforeTrigger + server + ' ' + afterTrigger);
             setShowServerSelector(false);
           }}
           onClose={() => setShowServerSelector(false)}

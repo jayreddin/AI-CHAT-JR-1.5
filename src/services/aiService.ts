@@ -1,4 +1,3 @@
-
 import { generateId } from '@/utils/helpers';
 import { MessageType } from '@/types/chat';
 import { toast } from 'sonner';
@@ -9,16 +8,129 @@ interface ChatOptions {
   tools?: any[];
 }
 
-// Service for handling AI API calls
+interface ToolDefinition {
+  type: string;
+  function: {
+    name: string;
+    description: string;
+    parameters: any;
+  };
+}
+
+const availableTools: ToolDefinition[] = [
+  {
+    type: "function",
+    function: {
+      name: "get_weather",
+      description: "Get current weather for a given location",
+      parameters: {
+        type: "object",
+        properties: {
+          location: {
+            type: "string",
+            description: "City name e.g. Paris, London"
+          }
+        },
+        required: ["location"]
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "web_search",
+      description: "Search the web for information",
+      parameters: {
+        type: "object",
+        properties: {
+          query: {
+            type: "string",
+            description: "Search query"
+          }
+        },
+        required: ["query"]
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "calculator",
+      description: "Perform calculations",
+      parameters: {
+        type: "object",
+        properties: {
+          expression: {
+            type: "string",
+            description: "Mathematical expression to calculate"
+          }
+        },
+        required: ["expression"]
+      }
+    }
+  }
+];
+
 export const aiService = {
-  // Send a message to an AI model
+  _hasFunctionCalls(message: string): { hasTool: boolean, toolName: string | null } {
+    const toolPatterns = [
+      { regex: /!weather\s+([^!]+)(?=$|!)/i, name: 'get_weather' },
+      { regex: /!search\s+([^!]+)(?=$|!)/i, name: 'web_search' },
+      { regex: /!calc\s+([^!]+)(?=$|!)/i, name: 'calculator' }
+    ];
+    
+    for (const pattern of toolPatterns) {
+      if (pattern.regex.test(message)) {
+        return { hasTool: true, toolName: pattern.name };
+      }
+    }
+    
+    return { hasTool: false, toolName: null };
+  },
+  
+  async _executeFunction(name: string, args: any): Promise<string> {
+    switch (name) {
+      case 'get_weather':
+        return `Weather in ${args.location}: 22°C, Partly Cloudy (simulated)`;
+      case 'web_search':
+        return `Search results for "${args.query}": [Simulated search results]`;
+      case 'calculator':
+        try {
+          const result = eval(args.expression);
+          return `Result: ${result}`;
+        } catch (e) {
+          return `Error calculating "${args.expression}": ${e.message}`;
+        }
+      default:
+        return `Function ${name} not implemented yet`;
+    }
+  },
+  
+  _extractFunctionArgs(message: string, functionName: string): any {
+    switch (functionName) {
+      case 'get_weather':
+        const weatherMatch = message.match(/!weather\s+([^!]+)(?=$|!)/i);
+        return weatherMatch ? { location: weatherMatch[1].trim() } : { location: 'unknown' };
+      
+      case 'web_search':
+        const searchMatch = message.match(/!search\s+([^!]+)(?=$|!)/i);
+        return searchMatch ? { query: searchMatch[1].trim() } : { query: 'unknown' };
+      
+      case 'calculator':
+        const calcMatch = message.match(/!calc\s+([^!]+)(?=$|!)/i);
+        return calcMatch ? { expression: calcMatch[1].trim() } : { expression: '0' };
+      
+      default:
+        return {};
+    }
+  },
+
   async sendMessage(
     content: string,
     model: string = 'gpt-4o-mini',
     isStreaming: boolean = false
   ): Promise<{message: MessageType, stream?: AsyncIterable<any>}> {
     try {
-      // Create a message object
       const message: MessageType = {
         id: generateId(),
         content: '',
@@ -28,59 +140,143 @@ export const aiService = {
         isStreaming: isStreaming
       };
 
+      const { hasTool, toolName } = this._hasFunctionCalls(content);
+      
       const options: ChatOptions = {
         model: model,
         stream: isStreaming
       };
+      
+      if (hasTool && toolName) {
+        options.tools = availableTools;
+      }
 
       console.log(`Sending message to model: ${model}, streaming: ${isStreaming}`);
+      console.log(`Function calling detected: ${hasTool}, tool: ${toolName}`);
 
-      // Check if Puter is available
       if (typeof window !== 'undefined' && window.puter) {
-        if (isStreaming) {
-          // Handle streaming response
+        if (hasTool && toolName) {
           try {
-            const streamResponse = await window.puter.ai.chat(content, options);
-            console.log('Got stream response object:', streamResponse);
-            return { message, stream: streamResponse };
+            const args = this._extractFunctionArgs(content, toolName);
+            console.log(`Executing function ${toolName} with args:`, args);
+            
+            const functionResult = await this._executeFunction(toolName, args);
+            
+            const messageHistory = [
+              { role: "user", content },
+              { 
+                role: "assistant", 
+                content: null,
+                tool_calls: [{
+                  id: generateId(),
+                  type: "function",
+                  function: {
+                    name: toolName,
+                    arguments: JSON.stringify(args)
+                  }
+                }]
+              },
+              {
+                role: "tool",
+                tool_call_id: generateId(),
+                content: functionResult
+              }
+            ];
+            
+            if (isStreaming) {
+              try {
+                const streamResponse = await window.puter.ai.chat(messageHistory, {
+                  model,
+                  stream: true
+                });
+                
+                console.log('Got stream response with function result:', streamResponse);
+                return { message, stream: streamResponse };
+              } catch (error) {
+                console.error('Streaming error with function:', error);
+                message.content = `Error: ${error.message || 'Unknown streaming error'}`;
+                return { message };
+              }
+            } else {
+              try {
+                const response = await window.puter.ai.chat(messageHistory, {
+                  model
+                });
+                
+                console.log('Got response with function result:', response);
+                
+                if (typeof response === 'string') {
+                  message.content = response;
+                } else if (response.message?.content) {
+                  message.content = response.message.content;
+                } else if (response.content) {
+                  message.content = response.content;
+                } else {
+                  message.content = 'Received response in an unsupported format.';
+                }
+                
+                message.isStreaming = false;
+                return { message };
+              } catch (error) {
+                console.error('Non-streaming error with function:', error);
+                message.content = `Error: ${error.message || 'Unknown error'}`;
+                return { message };
+              }
+            }
           } catch (error) {
-            console.error('Streaming error:', error);
-            message.content = `Error: ${error.message || 'Unknown streaming error'}`;
+            console.error('Error handling function call:', error);
+            message.content = `Error executing ${toolName}: ${error.message || 'Unknown error'}`;
             return { message };
           }
         } else {
-          // Handle non-streaming response
-          try {
-            const response = await window.puter.ai.chat(content, options);
-            console.log('Got response:', response);
-            
-            // Handle different response formats
-            if (typeof response === 'string') {
-              message.content = response;
-            } else if (response.message?.content) {
-              message.content = response.message.content;
-            } else if (response.content) {
-              message.content = response.content;
-            } else {
-              message.content = 'Received response in an unsupported format.';
+          if (isStreaming) {
+            try {
+              const streamResponse = await window.puter.ai.chat(content, options);
+              console.log('Got stream response object:', streamResponse);
+              return { message, stream: streamResponse };
+            } catch (error) {
+              console.error('Streaming error:', error);
+              message.content = `Error: ${error.message || 'Unknown streaming error'}`;
+              return { message };
             }
-            
-            message.isStreaming = false;
-            return { message };
-          } catch (error) {
-            console.error('Non-streaming error:', error);
-            message.content = `Error: ${error.message || 'Unknown error'}`;
-            return { message };
+          } else {
+            try {
+              const response = await window.puter.ai.chat(content, options);
+              console.log('Got response:', response);
+              
+              if (typeof response === 'string') {
+                message.content = response;
+              } else if (response.message?.content) {
+                message.content = response.message.content;
+              } else if (response.content) {
+                message.content = response.content;
+              } else {
+                message.content = 'Received response in an unsupported format.';
+              }
+              
+              message.isStreaming = false;
+              return { message };
+            } catch (error) {
+              console.error('Non-streaming error:', error);
+              message.content = `Error: ${error.message || 'Unknown error'}`;
+              return { message };
+            }
           }
         }
       } else {
-        // Fallback for when Puter is not available
         console.warn('Puter is not available, using mock response');
         
-        // Mock response
-        message.content = `This is a simulated response from ${model}. In a real implementation, this would call the Puter API.`;
-        message.isStreaming = false;
+        if (hasTool && toolName) {
+          const args = this._extractFunctionArgs(content, toolName);
+          const functionResult = await this._executeFunction(toolName, args);
+          message.content = `[MOCK] Function call to ${toolName}: ${functionResult}
+          
+This is a simulated response for function calling. In a real implementation, this would call the Puter AI with tools.`;
+        } else {
+          message.content = `This is a simulated response from ${model}. In a real implementation, this would call the Puter API.`;
+        }
         
+        message.isStreaming = false;
         return { message };
       }
     } catch (error) {
@@ -90,7 +286,6 @@ export const aiService = {
     }
   },
 
-  // Generate an image from text
   async generateImage(prompt: string, testMode: boolean = true): Promise<HTMLImageElement | null> {
     try {
       if (typeof window !== 'undefined' && window.puter) {
@@ -104,7 +299,6 @@ export const aiService = {
     }
   },
 
-  // Extract text from an image
   async extractTextFromImage(imageUrl: string): Promise<string> {
     try {
       if (typeof window !== 'undefined' && window.puter) {
@@ -118,7 +312,6 @@ export const aiService = {
     }
   },
 
-  // Convert text to speech
   async textToSpeech(text: string): Promise<HTMLAudioElement | null> {
     try {
       if (typeof window !== 'undefined' && window.puter) {

@@ -72,10 +72,10 @@
     --ring: 224.3 76.3% 48%;
     
     /* Chat bubble colors */
-    --user-bg: 217.2 32.6% 20%;
-    --user-border: 217.2 32.6% 25%;
-    --ai-bg: 222.2 47.4% 15%;
-    --ai-border: 222.2 47.4% 20%;
+    --user-bg: 217.2 32.6% 17.5%;
+    --user-border: 217.2 32.6% 22.5%;
+    --ai-bg: 222.2 47.4% 11.2%;
+    --ai-border: 222.2 47.4% 16.2%;
   }
 }
 
@@ -84,7 +84,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground transition-colors duration-300;
   }
 }
 
@@ -117,23 +117,22 @@
 
 /* Glass morphism effect */
 .glass-morphism {
-  @apply backdrop-blur-md bg-white/70 border border-gray-200/50 shadow-sm;
-}
-
-.dark .glass-morphism {
-  @apply bg-gray-900/70 border-gray-700/50;
+  @apply backdrop-blur-md bg-white/70 dark:bg-gray-900/70 border border-gray-200/50 dark:border-gray-700/50 shadow-sm;
 }
 
 /* Animation for microphone recording */
 @keyframes pulse-recording {
   0% {
     transform: scale(1);
+    opacity: 1;
   }
   50% {
     transform: scale(1.05);
+    opacity: 0.8;
   }
   100% {
     transform: scale(1);
+    opacity: 1;
   }
 }
 
@@ -141,28 +140,126 @@
   animation: pulse-recording 1.5s infinite;
 }
 
+/* Chat message actions */
+.message-actions {
+  @apply opacity-0 transition-opacity duration-200 group-hover:opacity-100 focus-within:opacity-100;
+}
+
+.message-action-button {
+  @apply h-7 w-7 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 
+         flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-200 
+         dark:hover:bg-gray-700 transition-colors;
+}
+
+/* Logo styling */
+.app-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 2px solid #000;
+  border-radius: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  min-width: 4rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.app-logo:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.app-logo-top {
+  color: hsl(var(--primary));
+  font-weight: bold;
+  line-height: 1.2;
+  width: 100%;
+  text-align: center;
+  font-size: 1rem;
+}
+
+.app-logo-bottom {
+  color: #000;
+  font-weight: bold;
+  line-height: 1.2;
+  width: 100%;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.dark .app-logo {
+  border-color: #fff;
+}
+
+.dark .app-logo-bottom {
+  color: #fff;
+}
+
 /* Mobile styles */
 @media (max-width: 640px) {
-  .tooltip {
-    display: none;
+  .toolbar-icons {
+    @apply scale-90 gap-1 !important;
   }
   
-  .dialog-content {
-    width: 95vw !important;
-    max-width: 95vw !important;
-    padding: 1rem !important;
+  .toolbar-icons > button {
+    @apply h-9 w-9 !important;
   }
   
-  .dialog-content .dialog-header {
-    padding: 0.5rem 0 !important;
+  .toolbar-icons svg {
+    @apply h-4.5 w-4.5 !important;
   }
   
-  .dialog-content .dialog-footer {
-    padding: 0.5rem 0 !important;
+  .app-logo {
+    @apply px-1.5 py-0.5 min-w-12;
   }
   
-  .popover-content {
-    width: auto !important;
-    min-width: 120px !important;
+  .app-logo-top {
+    @apply text-sm;
   }
+  
+  .app-logo-bottom {
+    @apply text-xs;
+  }
+}
+
+/* Dialog scrolling fix */
+.dialog-content {
+  @apply flex flex-col max-h-[90vh] overflow-hidden;
+}
+
+.dialog-content .scrollable-dialog-content {
+  @apply overflow-y-auto flex-grow;
+}
+
+/* Utility bar responsive scaling */
+.utility-bar {
+  @apply flex justify-center space-x-1 sm:space-x-2 py-2 px-1 sm:px-2 overflow-x-auto;
+  max-width: 100vw;
+}
+
+.utility-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.utility-bar button {
+  @apply flex-shrink-0;
+}
+
+/* Chat input fixes */
+.chat-input-container {
+  @apply w-full max-w-full overflow-hidden px-2 sm:px-4;
+}
+
+/* Shadow fix for dark mode */
+.dark .shadow-sm {
+  --tw-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+
+.dark .shadow-md {
+  --tw-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
