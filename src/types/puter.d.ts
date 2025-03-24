@@ -3,6 +3,7 @@ export interface PuterAuth {
   signIn(): Promise<any>;
   signOut(): void;
   getUser(): Promise<any>;
+  isSignedIn(): boolean;
 }
 
 export interface PuterAI {

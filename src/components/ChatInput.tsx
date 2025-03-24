@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Mic, Square, Sparkles } from 'lucide-react';
 import { useChat } from '@/context/chat/ChatProvider';
@@ -8,8 +7,8 @@ import AttachmentThumbnails from './AttachmentThumbnails';
 import AttachmentButtons from './AttachmentButtons';
 import KnowledgeBaseSelector from './KnowledgeBaseSelector';
 import ActiveKnowledgeFiles from './ActiveKnowledgeFiles';
-import { ToolSelector } from './ToolSelector';
-import { ServerSelector } from './ServerSelector';
+import ToolSelector from './ToolSelector';
+import ServerSelector from './ServerSelector';
 
 interface ChatInputProps {
   attachments?: Attachment[];
@@ -34,7 +33,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isMobile = useIsMobile();
 
-  // Auto resize textarea
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -42,7 +40,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
     }
   }, [message]);
 
-  // Listen to speech recognition events
   useEffect(() => {
     const handleSpeechTranscript = (event: Event) => {
       const customEvent = event as CustomEvent<{ transcript: string }>;
@@ -59,7 +56,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
   const handleSendMessage = () => {
     if (!message.trim() && attachments.length === 0) return;
     
-    // Include the attachments and knowledge files in the log
     console.log('Sending message with attachments:', attachments);
     console.log('Active knowledge files:', activeKnowledgeFiles);
     
@@ -67,7 +63,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
     setMessage('');
     setActiveKnowledgeFiles([]);
     
-    // Clear attachments after sending
     if (onClearAttachments) {
       onClearAttachments();
     }
@@ -93,7 +88,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
     const newMessage = e.target.value;
     setMessage(newMessage);
     
-    // Check for trigger characters
     if (newMessage.includes('@') && !showKnowledgeBase) {
       setShowKnowledgeBase(true);
       setCursorPosition(e.target.selectionStart);
@@ -135,7 +129,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
         </button>
       )}
 
-      {/* Display active knowledge base files */}
       {activeKnowledgeFiles.length > 0 && (
         <ActiveKnowledgeFiles 
           files={activeKnowledgeFiles}
@@ -143,12 +136,11 @@ const ChatInput: React.FC<ChatInputProps> = ({
         />
       )}
       
-      {/* Display attachment thumbnails */}
       {attachments.length > 0 && (
         <AttachmentThumbnails 
           attachments={attachments} 
           onRemove={id => onRemoveAttachment?.(id)}
-          onPreview={() => {}} // Preview is handled within the component
+          onPreview={() => {}}
         />
       )}
 
@@ -164,7 +156,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
           disabled={!isLoggedIn || isStreaming}
         />
         
-        {/* Knowledge base selector */}
         {showKnowledgeBase && (
           <KnowledgeBaseSelector 
             onSelect={addKnowledgeFile}
@@ -172,7 +163,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
           />
         )}
         
-        {/* Tool selector */}
         {showToolSelector && (
           <ToolSelector 
             onSelect={(tool) => {
@@ -183,7 +173,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
           />
         )}
         
-        {/* Server selector */}
         {showServerSelector && (
           <ServerSelector 
             onSelect={(server) => {
@@ -195,7 +184,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
         )}
         
         <div className="absolute right-2 bottom-2 flex items-center gap-1">
-          {/* Attachment buttons */}
           {onAddAttachment && (
             <AttachmentButtons 
               onAddAttachment={onAddAttachment} 
@@ -203,7 +191,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
             />
           )}
           
-          {/* Mic button */}
           <button
             onClick={toggleMic}
             className={`p-2 rounded-full ${
@@ -216,7 +203,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
             <Mic size={isMobile ? 16 : 18} />
           </button>
           
-          {/* AI Assist button - suggested completions */}
           <button
             className="p-2 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
             disabled={!isLoggedIn || isStreaming || !message.trim()}
@@ -225,7 +211,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
             <Sparkles size={isMobile ? 16 : 18} />
           </button>
           
-          {/* Send button */}
           <button
             onClick={isLoggedIn ? handleSendMessage : login}
             className={`p-2 rounded-full ${
