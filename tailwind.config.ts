@@ -57,22 +57,14 @@ export default {
 					foreground: 'hsl(var(--card-foreground))'
 				},
 				sidebar: {
-					DEFAULT: 'hsl(var(--sidebar-background))',
-					foreground: 'hsl(var(--sidebar-foreground))',
-					primary: 'hsl(var(--sidebar-primary))',
-					'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
-					accent: 'hsl(var(--sidebar-accent))',
-					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
-					border: 'hsl(var(--sidebar-border))',
-					ring: 'hsl(var(--sidebar-ring))'
-				},
-				user: {
-					DEFAULT: '#EBF5FF', // Light blue for user messages
-					border: '#1E3A8A' // Dark blue border
-				},
-				ai: {
-					DEFAULT: '#ECFDF5', // Light green for AI messages
-					border: '#047857' // Dark green border
+					DEFAULT: 'hsl(var(--sidebar-background, var(--background)))',
+					foreground: 'hsl(var(--sidebar-foreground, var(--foreground)))',
+					primary: 'hsl(var(--sidebar-primary, var(--primary)))',
+					'primary-foreground': 'hsl(var(--sidebar-primary-foreground, var(--primary-foreground)))',
+					accent: 'hsl(var(--sidebar-accent, var(--accent)))',
+					'accent-foreground': 'hsl(var(--sidebar-accent-foreground, var(--accent-foreground)))',
+					border: 'hsl(var(--sidebar-border, var(--border)))',
+					ring: 'hsl(var(--sidebar-ring, var(--ring)))'
 				}
 			},
 			borderRadius: {

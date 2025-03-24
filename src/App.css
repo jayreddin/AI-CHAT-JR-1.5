@@ -12,41 +12,104 @@ body {
     'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
-.hide-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+/* Dark mode styles */
+.dark {
+  color-scheme: dark;
 }
 
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
+.dark body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
 }
 
-.animate-pulse-recording {
-  animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+.dark .bg-white {
+  background-color: hsl(var(--card));
 }
 
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
+.dark .text-gray-800 {
+  color: hsl(var(--card-foreground));
 }
 
-/* Responsive dialog styles */
-@media (max-width: 640px) {
-  .dialog-responsive {
-    width: 95vw !important;
-    max-width: 95vw !important;
-    max-height: 80vh !important;
-  }
+.dark .border-gray-200 {
+  border-color: hsl(var(--border));
 }
 
-/* Fix content overflow on mobile */
-.mobile-safe-height {
-  max-height: calc(100vh - 120px);
+.dark .bg-gray-50 {
+  background-color: hsl(var(--secondary));
+}
+
+.dark .bg-gray-100 {
+  background-color: hsl(var(--secondary));
+}
+
+.dark .text-gray-500 {
+  color: hsl(var(--muted-foreground));
+}
+
+.dark .text-gray-600 {
+  color: hsl(var(--foreground));
+}
+
+.dark .text-gray-700 {
+  color: hsl(var(--foreground));
+}
+
+.dark .hover\:bg-gray-50:hover {
+  background-color: hsl(var(--secondary));
+}
+
+.dark .hover\:bg-gray-100:hover {
+  background-color: hsl(var(--secondary));
+}
+
+.dark .hover\:bg-gray-200:hover {
+  background-color: hsl(var(--accent));
+}
+
+/* Dialog scrolling fix */
+.dialog-content {
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.dialog-content-body {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.scrollable-dialog-content {
   overflow-y: auto;
+  padding-right: 0.25rem;
+  max-height: 60vh;
+}
+
+/* Mobile optimizations */
+@media (max-width: 640px) {
+  .toolbar-icons {
+    transform: scale(0.9);
+    gap: 0.5rem !important;
+  }
+  
+  .header-compact {
+    padding: 0.5rem;
+  }
+  
+  .streaming-switch-mobile {
+    position: absolute;
+    right: 60px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+  }
+  
+  .streaming-switch-mobile span {
+    display: none;
+  }
 }
 
 /* Center model selector text */
@@ -95,225 +158,7 @@ body {
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
-/* Logo styling */
-.app-logo {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  border: 2px solid #000;
-  border-radius: 0.375rem;
-  padding: 0.25rem 0.5rem;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.app-logo:hover {
-  transform: scale(1.05);
-}
-
-.app-logo-top {
-  color: var(--primary);
-  font-weight: bold;
-  line-height: 1.2;
-  width: 100%;
-  text-align: center;
-}
-
-.app-logo-bottom {
-  color: #000;
-  font-weight: bold;
-  line-height: 1.2;
-  width: 100%;
-  text-align: center;
-}
-
-.dark .app-logo {
-  border-color: #fff;
-}
-
-.dark .app-logo-bottom {
-  color: #fff;
-}
-
-/* Message action buttons */
-.message-container {
-  position: relative;
-}
-
-.message-actions {
-  position: absolute;
-  display: flex;
-  gap: 0.5rem;
-  transition: opacity 0.2s ease;
-  opacity: 0;
-}
-
-.message-container:hover .message-actions,
-.message-actions:focus-within {
-  opacity: 1;
-}
-
-/* User message actions positioning */
-.message-actions-user {
-  right: 0;
-  bottom: -2rem;
-}
-
-/* AI message actions positioning */
-.message-actions-ai {
-  left: 0;
-  bottom: -2rem;
-}
-
-.message-action-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.9);
-  border: 1px solid #e2e8f0;
-  color: #64748b;
-  transition: all 0.2s;
-}
-
-.message-action-button:hover {
-  background-color: #f8fafc;
-  color: #334155;
-}
-
-.dark .message-action-button {
-  background-color: rgba(30, 41, 59, 0.8);
-  border-color: #334155;
-  color: #94a3b8;
-}
-
-.dark .message-action-button:hover {
-  background-color: rgba(30, 41, 59, 0.9);
-  color: #e2e8f0;
-}
-
-/* Fix double scrollbar in dialogs */
-.dialog-content {
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.dialog-content-body {
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-}
-
-.scrollable-dialog-content {
-  overflow-y: auto;
-  padding-right: 0.25rem;
-  max-height: 60vh;
-}
-
-/* Utility bar and toolbar responsive styles */
-.utility-bar {
-  display: flex;
-  justify-content: center;
-  flex-wrap: nowrap;
-  gap: 0.5rem;
-  padding: 0.5rem;
-  overflow-x: auto;
-  width: 100%;
-  max-width: 100vw;
-  scrollbar-width: none;
-}
-
-.utility-bar::-webkit-scrollbar {
-  display: none;
-}
-
-.toolbar-icons {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: nowrap;
-}
-
-.toolbar-icons > button {
-  flex-shrink: 0;
-}
-
-/* Mobile optimizations */
-@media (max-width: 640px) {
-  .toolbar-icons {
-    transform: scale(0.9);
-    gap: 0.5rem !important;
-  }
-  
-  .header-compact {
-    padding: 0.5rem;
-  }
-  
-  .streaming-switch-mobile {
-    position: absolute;
-    right: 60px;
-    top: 50%;
-    transform: translateY(-50%);
-    display: flex;
-    align-items: center;
-  }
-  
-  .streaming-switch-mobile span {
-    display: none;
-  }
-}
-
-/* Dark mode styles */
-.dark {
-  color-scheme: dark;
-}
-
-.dark body {
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
-}
-
-.dark .bg-white {
+.dark .qr-code-container {
   background-color: hsl(var(--card));
-}
-
-.dark .text-gray-800 {
-  color: hsl(var(--card-foreground));
-}
-
-.dark .border-gray-200 {
-  border-color: hsl(var(--border));
-}
-
-.dark .bg-gray-50 {
-  background-color: hsl(var(--secondary));
-}
-
-.dark .bg-gray-100 {
-  background-color: hsl(var(--secondary));
-}
-
-.dark .text-gray-500 {
-  color: hsl(var(--muted-foreground));
-}
-
-.dark .text-gray-600 {
-  color: hsl(var(--foreground));
-}
-
-.dark .hover\:bg-gray-50:hover {
-  background-color: hsl(var(--secondary));
-}
-
-.dark .hover\:bg-gray-100:hover {
-  background-color: hsl(var(--secondary));
-}
-
-.dark .hover\:bg-gray-200:hover {
-  background-color: hsl(var(--accent));
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
 }

@@ -165,6 +165,10 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
+.dark .app-logo {
+  border-color: #fff;
+}
+
 .app-logo:hover {
   transform: scale(1.05);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -188,10 +192,6 @@
   font-size: 0.9rem;
 }
 
-.dark .app-logo {
-  border-color: #fff;
-}
-
 .dark .app-logo-bottom {
   color: #fff;
 }
@@ -207,7 +207,7 @@
   }
   
   .toolbar-icons svg {
-    @apply h-4.5 w-4.5 !important; /* Now using the extended size we defined */
+    @apply h-4 w-4 !important; /* Using standard Tailwind sizes instead of h-4.5 */
   }
   
   .app-logo {
@@ -251,6 +251,40 @@
   @apply w-full max-w-full overflow-hidden px-2 sm:px-4;
 }
 
+/* Dark mode fixes */
+.dark {
+  color-scheme: dark;
+}
+
+.dark .bg-white {
+  background-color: hsl(var(--background));
+}
+
+.dark .text-gray-800 {
+  color: hsl(var(--foreground));
+}
+
+.dark .text-gray-700 {
+  color: hsl(var(--foreground));
+}
+
+.dark .text-black {
+  color: hsl(var(--foreground));
+}
+
+.dark .bg-gray-50,
+.dark .bg-gray-100 {
+  background-color: hsl(var(--secondary));
+}
+
+.dark .border-gray-200 {
+  border-color: hsl(var(--border));
+}
+
+.dark .border-gray-300 {
+  border-color: hsl(var(--border));
+}
+
 /* Shadow fix for dark mode */
 .dark .shadow-sm {
   --tw-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
@@ -279,5 +313,5 @@
 
 /* New QR code container styles */
 .qr-code-container {
-  @apply bg-white p-4 rounded-lg shadow-md max-w-xs mx-auto;
+  @apply bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md max-w-xs mx-auto;
 }

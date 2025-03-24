@@ -118,7 +118,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({ settings, setSettings })
         <div className="space-y-2">
           <Label htmlFor="date-format">Date Format</Label>
           <Select 
-            value={settings.account.dateFormat}
+            value={settings.account.dateFormat || "MM/DD/YYYY"}
             onValueChange={(value) => setSettings({
               ...settings,
               account: {
@@ -141,7 +141,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({ settings, setSettings })
         <div className="space-y-2">
           <Label htmlFor="time-format">Time Format</Label>
           <Select 
-            value={settings.account.timeFormat}
+            value={settings.account.timeFormat || "12h"}
             onValueChange={(value) => setSettings({
               ...settings,
               account: {

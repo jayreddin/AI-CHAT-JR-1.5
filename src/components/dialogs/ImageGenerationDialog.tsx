@@ -155,7 +155,7 @@ export function ImageGenerationDialog({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="size">Image Size</Label>
-              <Select value={imageSize} onValueChange={setImageSize}>
+              <Select value={imageSize || "512x512"} onValueChange={setImageSize}>
                 <SelectTrigger id="size">
                   <SelectValue placeholder="Select size" />
                 </SelectTrigger>
@@ -171,7 +171,7 @@ export function ImageGenerationDialog({
 
             <div className="space-y-2">
               <Label htmlFor="count">Number of Images</Label>
-              <Select value={imageCount} onValueChange={setImageCount}>
+              <Select value={imageCount || "1"} onValueChange={setImageCount}>
                 <SelectTrigger id="count">
                   <SelectValue placeholder="Select count" />
                 </SelectTrigger>
