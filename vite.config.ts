@@ -6,6 +6,9 @@ import { componentTagger } from "lovable-tagger";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   base: '/AI-CHAT-JR-1.5/', // Add this line - should match your repository name
+  build: {
+    outDir: 'dist',
+  },
   server: {
     host: "::",
     port: 8080,
