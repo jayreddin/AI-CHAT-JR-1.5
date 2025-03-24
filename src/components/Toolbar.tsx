@@ -17,7 +17,8 @@ import {
   Bot, 
   Globe, 
   Settings,
-  ImageIcon
+  ImageIcon,
+  Plus
 } from 'lucide-react';
 
 interface ToolbarProps {
@@ -26,7 +27,7 @@ interface ToolbarProps {
 
 const Toolbar: React.FC<ToolbarProps> = ({ show }) => {
   const isMobile = useIsMobile();
-  const { isLoggedIn, login } = useChat();
+  const { isLoggedIn, login, createNewChat } = useChat();
   const { openDialog, openDialogHandler, closeDialogHandler } = useToolbarDialogs();
   const { refreshCounts, ...counts } = useToolbarCounts();
 
@@ -45,6 +46,12 @@ const Toolbar: React.FC<ToolbarProps> = ({ show }) => {
   return (
     <>
       <div className={`flex items-center justify-center gap-1 md:gap-2 p-1 bg-white/50 backdrop-blur-sm border border-gray-200 rounded-full shadow-sm mx-auto w-fit ${isMobile ? 'max-w-full overflow-x-auto hide-scrollbar' : ''}`}>
+        <ToolbarButton
+          icon={Plus}
+          label="New Chat"
+          onClick={createNewChat}
+        />
+        
         <ToolbarButton
           icon={History}
           label="Chat History"

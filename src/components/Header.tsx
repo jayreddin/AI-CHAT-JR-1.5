@@ -12,11 +12,9 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch';
 import { useChat } from '@/context/chat/ChatProvider';
 import ModelSelector from '@/components/ModelSelector';
-import { UserCircle, LogOut, LogIn, Plus } from 'lucide-react';
+import { UserCircle, LogOut, LogIn } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { loadFromStorage } from '@/utils/storage';
-import { Button } from '@/components/ui/button';
-import { initPuter } from '@/utils/puter';
 
 const Header = () => {
   const { 
@@ -37,10 +35,10 @@ const Header = () => {
       <div className="container mx-auto flex items-center justify-between">
         {/* Logo and Name */}
         <div className="flex items-center">
-          <button onClick={createNewChat} className="font-bold text-lg text-primary flex items-center">
-            <span className="mr-1">🧠</span>
-            JR AI Chat
-          </button>
+          <div className="font-bold text-lg flex flex-col items-center border border-black rounded-md px-2 py-1">
+            <span className="text-primary text-sm leading-tight">JR AI</span>
+            <span className="text-black text-sm leading-tight">Chat</span>
+          </div>
         </div>
 
         {/* Model Selector - Centered */}
@@ -60,16 +58,6 @@ const Header = () => {
               />
             </div>
           )}
-          
-          <Button 
-            onClick={createNewChat} 
-            variant="ghost" 
-            size="sm" 
-            className="flex items-center gap-1"
-          >
-            <Plus size={18} />
-            <span className={isMobile ? "sr-only" : ""}>New Chat</span>
-          </Button>
           
           <div className="relative">
             <DropdownMenu>

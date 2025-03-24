@@ -95,6 +95,83 @@ body {
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
+/* Logo styling */
+.app-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px solid #000;
+  border-radius: 0.375rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.app-logo-top {
+  color: var(--primary);
+  font-weight: bold;
+  line-height: 1.2;
+}
+
+.app-logo-bottom {
+  color: #000;
+  font-weight: bold;
+  line-height: 1.2;
+}
+
+/* Chat Bubble actions */
+.message-actions {
+  display: none;
+  position: absolute;
+  right: 0.5rem;
+  top: 0.5rem;
+}
+
+.message-container:hover .message-actions {
+  display: flex;
+}
+
+.message-action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid #e2e8f0;
+  color: #64748b;
+  margin-left: 0.25rem;
+  transition: all 0.2s;
+}
+
+.message-action-button:hover {
+  background-color: #f8fafc;
+  color: #334155;
+}
+
+/* Fix double scrollbar in dialogs */
+.dialog-content {
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.dialog-content-body {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.dialog-content-body > div {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.scrollable-dialog-content {
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
 /* Mobile optimizations */
 @media (max-width: 640px) {
   .toolbar-icons {

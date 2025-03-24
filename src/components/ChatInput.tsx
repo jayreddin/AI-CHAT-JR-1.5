@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Mic, Square, Sparkles } from 'lucide-react';
 import { useChat } from '@/context/chat/ChatProvider';
@@ -9,6 +10,7 @@ import KnowledgeBaseSelector from './KnowledgeBaseSelector';
 import ActiveKnowledgeFiles from './ActiveKnowledgeFiles';
 import ToolSelector from './ToolSelector';
 import ServerSelector from './ServerSelector';
+import { toast } from 'sonner';
 
 interface ChatInputProps {
   attachments?: Attachment[];
@@ -117,6 +119,29 @@ const ChatInput: React.FC<ChatInputProps> = ({
     setShowKnowledgeBase(false);
   };
 
+  const handleAIAssist = () => {
+    if (!message.trim()) return;
+    
+    // Get AI suggestions for the current message
+    try {
+      toast.info("Generating suggestions...");
+      // Here we would normally call an API to get suggestions
+      // For now, we'll simulate it by appending text to the message
+      
+      const suggestions = [
+        "Would you like more details on this topic?",
+        "Can I help clarify anything specific?",
+        "Is there a particular aspect you're interested in?"
+      ];
+      
+      const randomSuggestion = suggestions[Math.floor(Math.random() * suggestions.length)];
+      setMessage(prev => `${prev}\n\n${randomSuggestion}`);
+    } catch (error) {
+      toast.error("Failed to generate suggestions");
+      console.error("AI Assist error:", error);
+    }
+  };
+
   return (
     <div className="relative">
       {isStreaming && (
@@ -207,6 +232,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
             className="p-2 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
             disabled={!isLoggedIn || isStreaming || !message.trim()}
             title="AI Assist"
+            onClick={handleAIAssist}
           >
             <Sparkles size={isMobile ? 16 : 18} />
           </button>

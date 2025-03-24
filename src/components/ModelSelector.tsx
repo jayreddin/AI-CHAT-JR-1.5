@@ -31,7 +31,7 @@ const ModelSelector: React.FC = () => {
           {AVAILABLE_MODELS.map((model) => (
             <SelectItem
               key={model.id}
-              value={model.id}
+              value={model.id || "default-model"} // Ensure value is never empty
             >
               {model.name}
             </SelectItem>
