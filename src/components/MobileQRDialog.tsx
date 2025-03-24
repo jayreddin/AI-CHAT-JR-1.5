@@ -37,10 +37,10 @@ export const MobileQRDialog: React.FC<MobileQRDialogProps> = ({
         if (savedSettings) {
           const parsedSettings = JSON.parse(savedSettings);
           setSettings({
-            streamingEnabled: parsedSettings.ai.streamingEnabled,
+            streamingEnabled: parsedSettings.ai?.streamingEnabled ?? true,
             notificationsEnabled: false,
-            darkMode: parsedSettings.appearance.darkMode,
-            compactMode: parsedSettings.appearance.compactMode
+            darkMode: parsedSettings.appearance?.darkMode ?? false,
+            compactMode: parsedSettings.appearance?.compactMode ?? false
           });
         }
       } catch (error) {
@@ -85,11 +85,14 @@ export const MobileQRDialog: React.FC<MobileQRDialogProps> = ({
         const parsedSettings = JSON.parse(savedSettings);
         
         if (setting === 'darkMode') {
+          parsedSettings.appearance = parsedSettings.appearance || {};
           parsedSettings.appearance.darkMode = !settings.darkMode;
           document.documentElement.classList.toggle('dark', !settings.darkMode);
         } else if (setting === 'compactMode') {
+          parsedSettings.appearance = parsedSettings.appearance || {};
           parsedSettings.appearance.compactMode = !settings.compactMode;
         } else if (setting === 'streamingEnabled') {
+          parsedSettings.ai = parsedSettings.ai || {};
           parsedSettings.ai.streamingEnabled = !settings.streamingEnabled;
         }
         
@@ -125,12 +128,6 @@ export const MobileQRDialog: React.FC<MobileQRDialogProps> = ({
             value={currentUrl} 
             size={200}
             level="H" 
-            imageSettings={{
-              src: "/placeholder.svg",
-              excavate: true,
-              height: 40,
-              width: 40,
-            }}
           />
         </div>
         

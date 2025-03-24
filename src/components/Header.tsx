@@ -15,6 +15,7 @@ import ModelSelector from '@/components/ModelSelector';
 import { UserCircle, LogOut, LogIn } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { loadFromStorage } from '@/utils/storage';
+import Logo from '@/components/Logo';
 
 const Header = () => {
   const { 
@@ -31,14 +32,11 @@ const Header = () => {
   const userName = loadFromStorage('userName', '');
 
   return (
-    <header className="bg-white border-b p-2 md:p-3 shadow-sm">
+    <header className="bg-white dark:bg-background border-b p-2 md:p-3 shadow-sm">
       <div className="container mx-auto flex items-center justify-between">
-        {/* Logo and Name */}
+        {/* Logo */}
         <div className="flex items-center">
-          <div className="font-bold text-lg flex flex-col items-center border border-black rounded-md px-2 py-1">
-            <span className="text-primary text-sm leading-tight">JR AI</span>
-            <span className="text-black text-sm leading-tight">Chat</span>
-          </div>
+          <Logo />
         </div>
 
         {/* Model Selector - Centered */}
@@ -50,7 +48,7 @@ const Header = () => {
         <div className="flex items-center gap-3">
           {!isMobile && (
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">Streaming</span>
+              <span className="text-sm text-gray-600 dark:text-gray-300">Streaming</span>
               <Switch
                 checked={streamingEnabled}
                 onCheckedChange={toggleStreamingMode}
@@ -62,7 +60,7 @@ const Header = () => {
           <div className="relative">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-1 hover:bg-gray-100 p-1 rounded-md">
+                <button className="flex items-center gap-1 hover:bg-gray-100 hover:dark:bg-gray-800 p-1 rounded-md">
                   {isLoggedIn ? (
                     <>
                       <Avatar className="h-8 w-8">
@@ -94,7 +92,7 @@ const Header = () => {
                     {isMobile && (
                       <>
                         <DropdownMenuItem className="flex items-center justify-between">
-                          <span className="text-sm text-gray-600">Streaming</span>
+                          <span className="text-sm text-gray-600 dark:text-gray-300">Streaming</span>
                           <Switch
                             checked={streamingEnabled}
                             onCheckedChange={toggleStreamingMode}
