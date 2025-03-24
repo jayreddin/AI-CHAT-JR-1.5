@@ -154,7 +154,7 @@ export const aiService = {
     content: string,
     model: string = 'gpt-4o-mini',
     isStreaming: boolean = false
-  ): Promise<{message: MessageType, stream?: AsyncIterable<string | Uint8Array>}> {
+  ): Promise<{message: MessageType, stream?: AsyncIterable<any>}> {
     try {
       const message: MessageType = {
         id: generateId(),
