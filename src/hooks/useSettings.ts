@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import { updateMemoryFromSettings } from '@/utils/memory';
 
 export interface AppSettings {
   appearance: {
@@ -91,9 +92,8 @@ export const useSettings = (open: boolean) => {
   }, [open]);
 
   // Save settings
-  const saveSettings = () => {
+  const saveSettings = async () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
-    toast.success('Settings saved');
     
     // Apply some settings immediately
     document.documentElement.style.fontSize = `${settings.appearance.textSize}%`;
@@ -103,6 +103,17 @@ export const useSettings = (open: boolean) => {
     } else {
       document.documentElement.classList.remove('dark');
     }
+    
+    // Update memory if enabled
+    if (settings.appearance.memoryEnabled) {
+      try {
+        await updateMemoryFromSettings(settings);
+      } catch (error) {
+        console.error('Error updating memory from settings:', error);
+      }
+    }
+    
+    toast.success('Settings saved');
   };
 
   return {

@@ -14,7 +14,7 @@ const ModelSelector: React.FC = () => {
   const { currentModel, setModel, AVAILABLE_MODELS } = useChat();
 
   return (
-    <div className="w-44 md:w-56">
+    <div className="w-auto mx-auto">
       <Select
         value={currentModel.id}
         onValueChange={(id) => {
@@ -23,15 +23,16 @@ const ModelSelector: React.FC = () => {
         }}
       >
         <SelectTrigger 
-          className="h-9 border-none bg-transparent hover:bg-gray-100 focus:ring-0 text-center"
+          className="h-9 border-none bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 focus:ring-0 text-center model-selector-trigger"
         >
-          <SelectValue placeholder="Select Model" />
+          <SelectValue placeholder="Select Model" className="select-value-center" />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="model-selector-content">
           {AVAILABLE_MODELS.map((model) => (
             <SelectItem
               key={model.id}
               value={model.id || "default-model"} // Ensure value is never empty
+              className="model-selector-item"
             >
               {model.name}
             </SelectItem>

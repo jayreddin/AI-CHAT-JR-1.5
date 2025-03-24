@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
@@ -15,13 +15,24 @@ interface AppearanceTabProps {
 export const AppearanceTab: React.FC<AppearanceTabProps> = ({ settings, setSettings }) => {
   // Toggle a boolean setting
   const toggleSetting = (setting: 'darkMode' | 'terminalCommands' | 'compactMode' | 'memoryEnabled') => {
+    const newValue = !settings.appearance[setting];
+    
     setSettings({
       ...settings,
       appearance: {
         ...settings.appearance,
-        [setting]: !settings.appearance[setting]
+        [setting]: newValue
       }
     });
+    
+    // Apply changes in real-time
+    if (setting === 'darkMode') {
+      if (newValue) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
   };
 
   // Update text size
@@ -33,7 +44,23 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ settings, setSetti
         textSize: value[0]
       }
     });
+    
+    // Apply text size in real-time
+    document.documentElement.style.fontSize = `${value[0]}%`;
   };
+
+  // Apply settings on mount
+  useEffect(() => {
+    // Apply dark mode
+    if (settings.appearance.darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    
+    // Apply text size
+    document.documentElement.style.fontSize = `${settings.appearance.textSize}%`;
+  }, []);
 
   return (
     <div className="space-y-6">

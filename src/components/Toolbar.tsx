@@ -33,7 +33,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ show }) => {
 
   if (!show) return null;
 
-  const buttonSize = isMobile ? 16 : 20;
+  const buttonSize = isMobile ? 14 : 18;
   
   const handleButtonClick = (dialogName: string) => {
     if (!isLoggedIn) {
@@ -45,76 +45,88 @@ const Toolbar: React.FC<ToolbarProps> = ({ show }) => {
 
   return (
     <>
-      <div className={`flex items-center justify-center gap-1 md:gap-2 p-1 bg-white/50 backdrop-blur-sm border border-gray-200 rounded-full shadow-sm mx-auto w-fit ${isMobile ? 'max-w-full overflow-x-auto hide-scrollbar' : ''}`}>
+      <div className={`flex items-center justify-center gap-1 md:gap-2 p-1 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-full shadow-sm mx-auto w-fit max-w-[calc(100vw-16px)] overflow-x-auto hide-scrollbar`}>
         <ToolbarButton
           icon={Plus}
           label="New Chat"
+          size={buttonSize}
           onClick={createNewChat}
         />
         
         <ToolbarButton
           icon={History}
-          label="Chat History"
+          label="History"
+          size={buttonSize}
           onClick={() => handleButtonClick('history')}
         />
         
         <ToolbarButton
           icon={Image}
-          label="Upload Image"
+          label="Image"
+          size={buttonSize}
           onClick={() => handleButtonClick('image')}
         />
         
         <ToolbarButton
           icon={FileUp}
-          label="Upload File"
+          label="File"
+          size={buttonSize}
           onClick={() => handleButtonClick('file')}
         />
         
         <ToolbarButton
           icon={Book}
-          label="Knowledge Base"
+          label="Knowledge"
+          size={buttonSize}
           onClick={() => handleButtonClick('knowledge')}
         />
         
         <ToolbarButton
           icon={Link}
-          label="Add Web URL"
+          label="Web URL"
+          size={buttonSize}
           onClick={() => handleButtonClick('weburl')}
         />
         
         <ToolbarButton
           icon={Wrench}
           label="Tools"
+          size={buttonSize}
           onClick={() => handleButtonClick('tools')}
         />
         
         <ToolbarButton
           icon={Server}
-          label="MCP Servers"
+          label="MCP"
+          size={buttonSize}
           onClick={() => handleButtonClick('mcp')}
         />
         
         <ToolbarButton
           icon={Bot}
-          label="AI Agents"
+          label="Agents"
+          size={buttonSize}
           onClick={() => handleButtonClick('agents')}
         />
         
         <ToolbarButton
           icon={Globe}
-          label="Browser Control"
+          label="Browser"
+          size={buttonSize}
           onClick={() => handleButtonClick('browser')}
         />
         
         <ToolbarButton
           icon={ImageIcon}
-          label="Image Generation"
+          label="Images"
+          size={buttonSize}
           onClick={() => handleButtonClick('imagegeneration')}
         />
         
         <ToolbarButton
           icon={Settings}
           label="Settings"
+          size={buttonSize}
           onClick={() => handleButtonClick('settings')}
         />
       </div>

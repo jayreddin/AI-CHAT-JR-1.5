@@ -2,24 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import { DialogForm } from "@/components/ui/dialog-form";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import { Search, Github, Download } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
 import { toast } from 'sonner';
-
-interface Tool {
-  id: string;
-  name: string;
-  description: string;
-  source: string;
-  callWord: string;
-  installed: boolean;
-  active: boolean;
-  examples: string[];
-  details: string;
-}
+import ToolSearch from './tools/ToolSearch';
+import ToolsList from './tools/ToolsList';
+import { Tool } from './tools/ToolItem';
+import { makeMemoryDir, saveToMemory } from '@/utils/memory';
 
 interface ToolsDialogProps {
   open: boolean;
@@ -109,20 +96,27 @@ export const ToolsDialog: React.FC<ToolsDialogProps> = ({ open, onOpenChange }) 
     }
   }, []);
 
-  // Save tools to localStorage
-  const saveTools = () => {
+  // Save tools to localStorage and memory if enabled
+  const saveTools = async () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(tools));
+    
+    try {
+      // Save to memory folder if memory is enabled
+      const memoryEnabled = localStorage.getItem('ai-chat-settings');
+      if (memoryEnabled) {
+        const settings = JSON.parse(memoryEnabled);
+        if (settings.appearance.memoryEnabled) {
+          await makeMemoryDir('/tools');
+          await saveToMemory('/tools/installed-tools.json', JSON.stringify(tools));
+        }
+      }
+    } catch (err) {
+      console.error('Error saving tools to memory:', err);
+    }
+    
     toast.success('Tools settings saved');
     onOpenChange(false);
   };
-
-  // Filter tools based on search query and source
-  const filteredTools = tools.filter(tool => {
-    const matchesQuery = tool.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                        tool.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesSource = source === 'all' || tool.source === source;
-    return matchesQuery && matchesSource;
-  });
 
   // Toggle tool expanded view
   const toggleToolExpanded = (id: string) => {
@@ -158,97 +152,23 @@ export const ToolsDialog: React.FC<ToolsDialogProps> = ({ open, onOpenChange }) 
       }
     >
       <div className="space-y-4">
-        <div className="flex items-center space-x-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search for tools..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8"
-            />
-          </div>
-        </div>
+        <ToolSearch 
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          source={source}
+          setSource={setSource}
+        />
 
-        <Tabs defaultValue="all" onValueChange={setSource}>
-          <TabsList className="grid grid-cols-4 w-full">
-            <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="github">GitHub</TabsTrigger>
-            <TabsTrigger value="reddit">Reddit</TabsTrigger>
-            <TabsTrigger value="google">Google</TabsTrigger>
-          </TabsList>
-        </Tabs>
-
-        <div className="max-h-[350px] overflow-y-auto pr-1">
-          {filteredTools.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              No tools found matching your search criteria
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {filteredTools.map((tool) => (
-                <div key={tool.id} className="border rounded-lg overflow-hidden">
-                  <div 
-                    className="flex items-center justify-between p-3 cursor-pointer hover:bg-accent"
-                    onClick={() => toggleToolExpanded(tool.id)}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div className="flex-1">
-                        <div className="font-medium">{tool.name}</div>
-                        <div className="text-sm text-muted-foreground">{tool.description}</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      {tool.installed ? (
-                        <Switch 
-                          checked={tool.active} 
-                          onCheckedChange={() => toggleToolActive(tool.id)}
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      ) : (
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleToolInstalled(tool.id);
-                          }}
-                        >
-                          <Download className="h-4 w-4 mr-1" />
-                          Install
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {expandedToolId === tool.id && (
-                    <div className="p-3 bg-accent/50 border-t">
-                      <div className="text-sm space-y-2">
-                        <div>
-                          <span className="font-medium">Call with:</span> <code className="bg-background px-1 py-0.5 rounded">{tool.callWord}</code>
-                        </div>
-                        <div>
-                          <span className="font-medium">Source:</span> <span className="capitalize">{tool.source}</span>
-                        </div>
-                        <div>
-                          <span className="font-medium">Details:</span> 
-                          <p className="mt-1">{tool.details}</p>
-                        </div>
-                        <div>
-                          <span className="font-medium">Examples:</span>
-                          <ul className="list-disc list-inside mt-1">
-                            {tool.examples.map((example, index) => (
-                              <li key={index}><code className="bg-background px-1 py-0.5 rounded">{example}</code></li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
+        <div className="max-h-[350px] overflow-y-auto pr-1 scrollable-dialog-content">
+          <ToolsList 
+            tools={tools}
+            expandedToolId={expandedToolId}
+            toggleToolExpanded={toggleToolExpanded}
+            toggleToolInstalled={toggleToolInstalled}
+            toggleToolActive={toggleToolActive}
+            searchQuery={searchQuery}
+            source={source}
+          />
         </div>
       </div>
     </DialogForm>

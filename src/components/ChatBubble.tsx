@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useChat } from '@/context/chat/ChatProvider';
-import { RefreshCw, Trash2, FileText, Copy } from 'lucide-react';
+import { RefreshCw, Trash2, FileText, Copy, Edit } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
@@ -43,7 +43,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
 
   return (
     <div
-      className={`flex mb-4 ${isUser ? 'justify-end' : 'justify-start'}`}
+      className={`flex mb-4 ${isUser ? 'justify-end' : 'justify-start'} message-container relative`}
       onMouseEnter={() => setShowControls(true)}
       onMouseLeave={() => setShowControls(false)}
     >
@@ -51,7 +51,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
         className={`relative max-w-[85%] p-3 rounded-lg ${
           isUser
             ? 'bg-primary text-white rounded-tr-none'
-            : 'bg-gray-100 text-gray-800 rounded-tl-none'
+            : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-tl-none'
         }`}
       >
         {isUser ? (
@@ -74,7 +74,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
                     View Reasoning
                   </Button>
                 </HoverCardTrigger>
-                <HoverCardContent className="w-80 text-xs bg-gray-50 border border-gray-200">
+                <HoverCardContent className="w-80 text-xs bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
                   <div className="font-mono whitespace-pre-wrap">{message.reasoningContext}</div>
                 </HoverCardContent>
               </HoverCard>
@@ -86,51 +86,71 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
           {message.model ? `${message.model} · ` : ''}
           {formattedTime}
         </div>
-        
-        {(showControls || isMobile) && (
-          <div 
-            className={`absolute ${
-              isUser ? 'left-0 -translate-x-full -ml-2' : 'right-0 translate-x-full mr-2'
-            } top-1/2 -translate-y-1/2 flex flex-col gap-1`}
-          >
-            {isUser ? (
-              <>
-                <button
-                  onClick={() => resendMessage(message.id)}
-                  className="p-1.5 bg-gray-100 rounded-full shadow hover:bg-gray-200 text-gray-700"
-                  title="Resend message"
-                >
-                  <RefreshCw size={14} />
-                </button>
-                <button
-                  onClick={() => deleteMessage(message.id)}
-                  className="p-1.5 bg-gray-100 rounded-full shadow hover:bg-gray-200 text-red-500"
-                  title="Delete message"
-                >
-                  <Trash2 size={14} />
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  onClick={() => retryMessage(message.id)}
-                  className="p-1.5 bg-gray-100 rounded-full shadow hover:bg-gray-200 text-gray-700"
-                  title="Regenerate response"
-                >
-                  <RefreshCw size={14} />
-                </button>
-                <button
-                  onClick={copyMessageToClipboard}
-                  className="p-1.5 bg-gray-100 rounded-full shadow hover:bg-gray-200 text-gray-700"
-                  title="Copy to clipboard"
-                >
-                  <Copy size={14} />
-                </button>
-              </>
-            )}
-          </div>
-        )}
       </div>
+
+      {/* Message action buttons - positioned below the bubble */}
+      {(showControls || isMobile) && (
+        <div 
+          className={`flex mt-1 ${isUser ? 'justify-end mr-1' : 'justify-start ml-1'} gap-1`}
+        >
+          {isUser ? (
+            <>
+              <button
+                onClick={() => {/* Handle edit (placeholder) */}}
+                className="message-action-button"
+                title="Edit message"
+              >
+                <Edit size={14} />
+              </button>
+              <button
+                onClick={() => resendMessage(message.id)}
+                className="message-action-button"
+                title="Resend message"
+              >
+                <RefreshCw size={14} />
+              </button>
+              <button
+                onClick={copyMessageToClipboard}
+                className="message-action-button"
+                title="Copy message"
+              >
+                <Copy size={14} />
+              </button>
+              <button
+                onClick={() => deleteMessage(message.id)}
+                className="message-action-button"
+                title="Delete message"
+              >
+                <Trash2 size={14} />
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => retryMessage(message.id)}
+                className="message-action-button"
+                title="Regenerate response"
+              >
+                <RefreshCw size={14} />
+              </button>
+              <button
+                onClick={copyMessageToClipboard}
+                className="message-action-button"
+                title="Copy to clipboard"
+              >
+                <Copy size={14} />
+              </button>
+              <button
+                onClick={() => deleteMessage(message.id)}
+                className="message-action-button"
+                title="Delete message"
+              >
+                <Trash2 size={14} />
+              </button>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 };
