@@ -6,9 +6,10 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { ImagePlus, Download, X } from "lucide-react";
+import { ImagePlus, Download, X, Loader2 } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { toast } from 'sonner';
+import { initPuter } from "@/utils/puter";
 
 interface ImageGenerationDialogProps {
   open: boolean;
@@ -40,36 +41,73 @@ export function ImageGenerationDialog({
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
   const [showPreview, setShowPreview] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
+  const [testMode, setTestMode] = useState(true);
 
-  const handleGenerate = () => {
+  const generateImage = async () => {
     if (!prompt.trim()) {
       toast.error("Please enter a prompt description");
       return;
     }
 
+    // Check if Puter is available
+    if (!window.puter || !window.puter.ai) {
+      toast.error("Image generation is not available. Puter AI services could not be accessed.");
+      return;
+    }
+
     setIsGenerating(true);
     
-    // Mock image generation
-    setTimeout(() => {
-      // In a real implementation, you would call an API here
-      const mockImages = Array(parseInt(imageCount)).fill(0).map((_, i) => 
-        `https://picsum.photos/${imageSize.split('x')[0]}?random=${Date.now() + i}`
-      );
-      setGeneratedImages(mockImages);
+    try {
+      // Generate images one by one
+      const count = parseInt(imageCount);
+      const newImages: string[] = [];
+      
+      for (let i = 0; i < count; i++) {
+        try {
+          toast.info(`Generating image ${i+1} of ${count}...`);
+          
+          // Call the Puter AI text-to-image API
+          const image = await window.puter.ai.txt2img(
+            tileMode ? `${prompt} [tile]` : prompt, 
+            testMode
+          );
+          
+          // The API returns an HTMLImageElement, we need to get the src
+          if (image && image.src) {
+            newImages.push(image.src);
+          }
+        } catch (error) {
+          console.error("Error generating image:", error);
+          toast.error(`Failed to generate image ${i+1}: ${error.message || "Unknown error"}`);
+        }
+      }
+      
+      if (newImages.length > 0) {
+        setGeneratedImages([...newImages, ...generatedImages]);
+        toast.success(`Generated ${newImages.length} image${newImages.length > 1 ? 's' : ''}`);
+      }
+    } catch (error) {
+      console.error("Error in image generation:", error);
+      toast.error("Image generation failed: " + (error.message || "Unknown error"));
+    } finally {
       setIsGenerating(false);
-      toast.success(`Generated ${imageCount} image${parseInt(imageCount) > 1 ? 's' : ''}`);
-    }, 2000);
+    }
   };
 
   const saveImage = (imageUrl: string) => {
-    // In a real implementation, you would download the image
-    // For now, we'll just open it in a new tab
-    window.open(imageUrl, '_blank');
+    // Create a temporary link and trigger a download
+    const link = document.createElement('a');
+    link.href = imageUrl;
+    link.download = `ai-generated-${Date.now()}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
     toast.success("Image saved");
   };
 
   const clearImages = () => {
     setGeneratedImages([]);
+    toast.info("Images cleared");
   };
 
   const showImagePreview = (imageUrl: string) => {
@@ -88,10 +126,17 @@ export function ImageGenerationDialog({
           <>
             <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
             <Button 
-              onClick={handleGenerate} 
+              onClick={generateImage} 
               disabled={isGenerating || !prompt.trim()}
             >
-              {isGenerating ? "Generating..." : "Generate"}
+              {isGenerating ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                "Generate"
+              )}
             </Button>
           </>
         }
@@ -141,7 +186,7 @@ export function ImageGenerationDialog({
             </div>
           </div>
 
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between space-y-0">
             <div className="flex items-center space-x-2">
               <Switch 
                 id="tile-mode" 
@@ -149,6 +194,15 @@ export function ImageGenerationDialog({
                 onCheckedChange={setTileMode} 
               />
               <Label htmlFor="tile-mode">Enable Tile Mode (seamless texture)</Label>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Switch 
+                id="test-mode" 
+                checked={testMode} 
+                onCheckedChange={setTestMode} 
+              />
+              <Label htmlFor="test-mode" className="text-sm">Test Mode (no API credits)</Label>
             </div>
           </div>
 

@@ -12,9 +12,11 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch';
 import { useChat } from '@/context/chat/ChatProvider';
 import ModelSelector from '@/components/ModelSelector';
-import { ChevronDown, UserCircle, LogOut, LogIn, Menu } from 'lucide-react';
+import { UserCircle, LogOut, LogIn, Plus } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { loadFromStorage } from '@/utils/storage';
+import { Button } from '@/components/ui/button';
+import { initPuter } from '@/utils/puter';
 
 const Header = () => {
   const { 
@@ -36,9 +38,14 @@ const Header = () => {
         {/* Logo and Name */}
         <div className="flex items-center">
           <button onClick={createNewChat} className="font-bold text-lg text-primary flex items-center">
-            {!isMobile && <span className="mr-1">🧠</span>}
+            <span className="mr-1">🧠</span>
             JR AI Chat
           </button>
+        </div>
+
+        {/* Model Selector - Centered */}
+        <div className="absolute left-1/2 transform -translate-x-1/2">
+          <ModelSelector />
         </div>
 
         {/* Settings and Controls */}
@@ -54,7 +61,15 @@ const Header = () => {
             </div>
           )}
           
-          <ModelSelector />
+          <Button 
+            onClick={createNewChat} 
+            variant="ghost" 
+            size="sm" 
+            className="flex items-center gap-1"
+          >
+            <Plus size={18} />
+            <span className={isMobile ? "sr-only" : ""}>New Chat</span>
+          </Button>
           
           <div className="relative">
             <DropdownMenu>
@@ -71,12 +86,12 @@ const Header = () => {
                           </AvatarFallback>
                         )}
                       </Avatar>
-                      {!isMobile && <ChevronDown size={16} />}
+                      {!isMobile && <span className="text-sm">{userName || 'User'}</span>}
                     </>
                   ) : (
                     <>
                       <UserCircle size={isMobile ? 24 : 20} />
-                      {!isMobile && <ChevronDown size={16} />}
+                      {!isMobile && <span className="text-sm">Sign In</span>}
                     </>
                   )}
                 </button>
@@ -90,7 +105,7 @@ const Header = () => {
                     <DropdownMenuSeparator />
                     {isMobile && (
                       <>
-                        <DropdownMenuItem className="flex items-center gap-2">
+                        <DropdownMenuItem className="flex items-center justify-between">
                           <span className="text-sm text-gray-600">Streaming</span>
                           <Switch
                             checked={streamingEnabled}

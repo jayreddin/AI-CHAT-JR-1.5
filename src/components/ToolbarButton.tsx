@@ -1,35 +1,36 @@
 
 import React from 'react';
 import { LucideIcon } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ToolbarButtonProps {
   icon: LucideIcon;
   label: string;
+  count?: number;
   onClick: () => void;
-  isActive?: boolean;
 }
 
-const ToolbarButton: React.FC<ToolbarButtonProps> = ({ icon: Icon, label, onClick, isActive }) => {
+const ToolbarButton: React.FC<ToolbarButtonProps> = ({ icon: Icon, label, count, onClick }) => {
+  const isMobile = useIsMobile();
+  const buttonSize = isMobile ? 16 : 20;
+  
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <button
-          onClick={onClick}
-          className={`relative flex flex-col items-center justify-center p-2 rounded-full transition-all duration-200 ${
-            isActive
-              ? 'bg-primary/20 text-primary'
-              : 'bg-white/80 text-gray-700 hover:bg-gray-100'
-          }`}
-          aria-label={label}
-        >
-          <Icon size={18} />
-        </button>
-      </TooltipTrigger>
-      <TooltipContent side="top" className="z-[100] bg-gray-800 text-white border-gray-800">
-        {label}
-      </TooltipContent>
-    </Tooltip>
+    <button
+      onClick={onClick}
+      className="relative flex flex-col items-center gap-1 p-2 rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
+      title={label}
+    >
+      <Icon className="w-5 h-5 text-gray-700 dark:text-gray-300" size={buttonSize} />
+      <span className="text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">
+        {count !== undefined ? `${label} (${count})` : label}
+      </span>
+      
+      {count && count > 0 && (
+        <span className="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+          {count > 9 ? '9+' : count}
+        </span>
+      )}
+    </button>
   );
 };
 

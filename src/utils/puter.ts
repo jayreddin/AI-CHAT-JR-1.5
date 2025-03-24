@@ -21,3 +21,24 @@ export const initPuter = () => {
   console.log('Puter is not available');
   return false;
 };
+
+export const getPuterEnvironment = (): 'app' | 'web' | 'gui' | 'unknown' => {
+  if (window.puter && window.puter.env) {
+    return window.puter.env as 'app' | 'web' | 'gui';
+  }
+  return 'unknown';
+};
+
+export const isPuterSignedIn = (): boolean => {
+  if (window.puter && window.puter.auth && typeof window.puter.auth.isSignedIn === 'function') {
+    return window.puter.auth.isSignedIn();
+  }
+  return false;
+};
+
+export const requiresLogin = (): boolean => {
+  const env = getPuterEnvironment();
+  // Only require login if we're in 'web' environment
+  // In 'app' or 'gui' environments, user should already be authenticated
+  return env === 'web' || env === 'unknown';
+};

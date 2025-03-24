@@ -1,11 +1,12 @@
 
 import React, { useState } from 'react';
 import { useChat } from '@/context/chat/ChatProvider';
-import { RefreshCw, Trash2, FileText } from 'lucide-react';
+import { RefreshCw, Trash2, FileText, Copy } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
+import { toast } from 'sonner';
 
 interface ChatBubbleProps {
   message: {
@@ -34,6 +35,11 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
     hour: '2-digit',
     minute: '2-digit',
   });
+
+  const copyMessageToClipboard = () => {
+    navigator.clipboard.writeText(content);
+    toast.success("Message copied to clipboard");
+  };
 
   return (
     <div
@@ -81,7 +87,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
           {formattedTime}
         </div>
         
-        {showControls && !isMobile && (
+        {(showControls || isMobile) && (
           <div 
             className={`absolute ${
               isUser ? 'left-0 -translate-x-full -ml-2' : 'right-0 translate-x-full mr-2'
@@ -91,27 +97,36 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
               <>
                 <button
                   onClick={() => resendMessage(message.id)}
-                  className="p-1 bg-white rounded-full shadow hover:bg-gray-100"
+                  className="p-1.5 bg-gray-100 rounded-full shadow hover:bg-gray-200 text-gray-700"
                   title="Resend message"
                 >
                   <RefreshCw size={14} />
                 </button>
                 <button
                   onClick={() => deleteMessage(message.id)}
-                  className="p-1 bg-white rounded-full shadow hover:bg-gray-100 text-red-500"
+                  className="p-1.5 bg-gray-100 rounded-full shadow hover:bg-gray-200 text-red-500"
                   title="Delete message"
                 >
                   <Trash2 size={14} />
                 </button>
               </>
             ) : (
-              <button
-                onClick={() => retryMessage(message.id)}
-                className="p-1 bg-white rounded-full shadow hover:bg-gray-100"
-                title="Regenerate response"
-              >
-                <RefreshCw size={14} />
-              </button>
+              <>
+                <button
+                  onClick={() => retryMessage(message.id)}
+                  className="p-1.5 bg-gray-100 rounded-full shadow hover:bg-gray-200 text-gray-700"
+                  title="Regenerate response"
+                >
+                  <RefreshCw size={14} />
+                </button>
+                <button
+                  onClick={copyMessageToClipboard}
+                  className="p-1.5 bg-gray-100 rounded-full shadow hover:bg-gray-200 text-gray-700"
+                  title="Copy to clipboard"
+                >
+                  <Copy size={14} />
+                </button>
+              </>
             )}
           </div>
         )}

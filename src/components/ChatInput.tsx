@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Mic, Square } from 'lucide-react';
+import { Send, Mic, Square, Sparkles } from 'lucide-react';
 import { useChat } from '@/context/chat/ChatProvider';
 import { Attachment } from '@/hooks/useAttachments';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -8,6 +8,8 @@ import AttachmentThumbnails from './AttachmentThumbnails';
 import AttachmentButtons from './AttachmentButtons';
 import KnowledgeBaseSelector from './KnowledgeBaseSelector';
 import ActiveKnowledgeFiles from './ActiveKnowledgeFiles';
+import { ToolSelector } from './ToolSelector';
+import { ServerSelector } from './ServerSelector';
 
 interface ChatInputProps {
   attachments?: Attachment[];
@@ -25,6 +27,8 @@ const ChatInput: React.FC<ChatInputProps> = ({
   const { sendMessage, isMicActive, toggleMic, isLoggedIn, login, isStreaming, stopGeneration } = useChat();
   const [message, setMessage] = useState('');
   const [showKnowledgeBase, setShowKnowledgeBase] = useState(false);
+  const [showToolSelector, setShowToolSelector] = useState(false);
+  const [showServerSelector, setShowServerSelector] = useState(false);
   const [cursorPosition, setCursorPosition] = useState(0);
   const [activeKnowledgeFiles, setActiveKnowledgeFiles] = useState<string[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -73,9 +77,15 @@ const ChatInput: React.FC<ChatInputProps> = ({
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
-    } else if (e.key === '!') {
+    } else if (e.key === '@') {
       setShowKnowledgeBase(true);
-      setCursorPosition(e.currentTarget.selectionStart);
+      setCursorPosition(e.currentTarget.selectionStart + 1);
+    } else if (e.key === '!') {
+      setShowToolSelector(true);
+      setCursorPosition(e.currentTarget.selectionStart + 1);
+    } else if (e.key === '$') {
+      setShowServerSelector(true);
+      setCursorPosition(e.currentTarget.selectionStart + 1);
     }
   };
 
@@ -83,12 +93,26 @@ const ChatInput: React.FC<ChatInputProps> = ({
     const newMessage = e.target.value;
     setMessage(newMessage);
     
-    // Check for "!" trigger
-    if (newMessage.includes('!') && !showKnowledgeBase) {
+    // Check for trigger characters
+    if (newMessage.includes('@') && !showKnowledgeBase) {
       setShowKnowledgeBase(true);
       setCursorPosition(e.target.selectionStart);
-    } else if (!newMessage.includes('!')) {
+    } else if (!newMessage.includes('@')) {
       setShowKnowledgeBase(false);
+    }
+    
+    if (newMessage.includes('!') && !showToolSelector) {
+      setShowToolSelector(true);
+      setCursorPosition(e.target.selectionStart);
+    } else if (!newMessage.includes('!')) {
+      setShowToolSelector(false);
+    }
+    
+    if (newMessage.includes('$') && !showServerSelector) {
+      setShowServerSelector(true);
+      setCursorPosition(e.target.selectionStart);
+    } else if (!newMessage.includes('$')) {
+      setShowServerSelector(false);
     }
   };
 
@@ -134,7 +158,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
           value={message}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
-          placeholder={isLoggedIn ? "Type a message..." : "Sign in to start chatting"}
+          placeholder={isLoggedIn ? "Type @ for knowledge, ! for tools, $ for MCP servers..." : "Sign in to start chatting"}
           className="min-h-[56px] max-h-[200px] w-full resize-none py-3 px-4 pr-20 bg-transparent outline-none text-gray-800 placeholder:text-gray-400"
           rows={1}
           disabled={!isLoggedIn || isStreaming}
@@ -145,6 +169,28 @@ const ChatInput: React.FC<ChatInputProps> = ({
           <KnowledgeBaseSelector 
             onSelect={addKnowledgeFile}
             onClose={() => setShowKnowledgeBase(false)}
+          />
+        )}
+        
+        {/* Tool selector */}
+        {showToolSelector && (
+          <ToolSelector 
+            onSelect={(tool) => {
+              setMessage((prev) => prev + tool + ' ');
+              setShowToolSelector(false);
+            }}
+            onClose={() => setShowToolSelector(false)}
+          />
+        )}
+        
+        {/* Server selector */}
+        {showServerSelector && (
+          <ServerSelector 
+            onSelect={(server) => {
+              setMessage((prev) => prev + server + ' ');
+              setShowServerSelector(false);
+            }}
+            onClose={() => setShowServerSelector(false)}
           />
         )}
         
@@ -170,6 +216,15 @@ const ChatInput: React.FC<ChatInputProps> = ({
             <Mic size={isMobile ? 16 : 18} />
           </button>
           
+          {/* AI Assist button - suggested completions */}
+          <button
+            className="p-2 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+            disabled={!isLoggedIn || isStreaming || !message.trim()}
+            title="AI Assist"
+          >
+            <Sparkles size={isMobile ? 16 : 18} />
+          </button>
+          
           {/* Send button */}
           <button
             onClick={isLoggedIn ? handleSendMessage : login}
@@ -186,6 +241,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
       </div>
     </div>
   );
-}
+};
 
 export default ChatInput;

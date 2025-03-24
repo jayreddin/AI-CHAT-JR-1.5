@@ -1,9 +1,8 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DialogForm } from "@/components/ui/dialog-form";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { AlertTriangle, Info, Camera, Mouse, Keyboard, Globe, Database } from 'lucide-react';
+import { AlertTriangle, Info, Camera, Mouse, Keyboard, Globe, Database, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -21,12 +20,14 @@ interface ControlOption {
   enabled: boolean;
   requiresPermission: boolean;
   permissionGranted?: boolean;
+  permissionInProgress?: boolean;
 }
 
 const STORAGE_KEY = 'ai-chat-browser-control';
 
 export const BrowserControlDialog: React.FC<BrowserControlDialogProps> = ({ open, onOpenChange }) => {
   const [activeTab, setActiveTab] = useState('controls');
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   
   const [controlOptions, setControlOptions] = useState<ControlOption[]>([
     {
@@ -75,7 +76,7 @@ export const BrowserControlDialog: React.FC<BrowserControlDialogProps> = ({ open
   ]);
 
   // Load settings from localStorage when dialog opens
-  React.useEffect(() => {
+  useEffect(() => {
     if (open) {
       const savedSettings = localStorage.getItem(STORAGE_KEY);
       if (savedSettings) {
@@ -90,13 +91,21 @@ export const BrowserControlDialog: React.FC<BrowserControlDialogProps> = ({ open
   }, [open]);
 
   // Toggle control option
-  const toggleControl = (id: string) => {
+  const toggleControl = async (id: string) => {
+    // Find the control
+    const control = controlOptions.find(option => option.id === id);
+    
+    if (!control) return;
+    
+    // If permission is required but not granted, request it
+    if (control.requiresPermission && !control.permissionGranted) {
+      await requestPermission(id);
+      return;
+    }
+    
+    // Otherwise toggle the enabled state
     setControlOptions(controlOptions.map(option => {
       if (option.id === id) {
-        if (option.requiresPermission && !option.permissionGranted) {
-          requestPermission(id);
-          return option;
-        }
         return { ...option, enabled: !option.enabled };
       }
       return option;
@@ -104,19 +113,92 @@ export const BrowserControlDialog: React.FC<BrowserControlDialogProps> = ({ open
   };
 
   // Request permission for a control
-  const requestPermission = (id: string) => {
-    toast.info(`Requesting permission for ${controlOptions.find(option => option.id === id)?.name}`);
+  const requestPermission = async (id: string) => {
+    const controlName = controlOptions.find(option => option.id === id)?.name || 'this feature';
     
-    // Simulate a permission request
-    setTimeout(() => {
+    // Mark this control as having permission in progress
+    setControlOptions(controlOptions.map(option => {
+      if (option.id === id) {
+        return { ...option, permissionInProgress: true };
+      }
+      return option;
+    }));
+    
+    toast.info(`Requesting permission for ${controlName}`);
+    
+    try {
+      let granted = false;
+      
+      // Handle different permission types
+      switch (id) {
+        case 'screenshots':
+          if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+            try {
+              const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+              
+              // Take a test screenshot to make sure it works
+              const video = document.createElement('video');
+              video.srcObject = stream;
+              await video.play();
+              
+              const canvas = document.createElement('canvas');
+              canvas.width = video.videoWidth;
+              canvas.height = video.videoHeight;
+              const ctx = canvas.getContext('2d');
+              ctx?.drawImage(video, 0, 0, canvas.width, canvas.height);
+              
+              // Show preview image
+              setPreviewImage(canvas.toDataURL('image/png'));
+              
+              // Stop all tracks to release the screen capture
+              stream.getTracks().forEach(track => track.stop());
+              
+              granted = true;
+            } catch (err) {
+              console.error('Error getting screen capture permission:', err);
+              toast.error('Screen capture permission denied');
+            }
+          } else {
+            toast.error('Screen capture is not supported in this browser');
+          }
+          break;
+          
+        case 'mouse':
+        case 'keyboard':
+          // Simulate permission process
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          granted = true;
+          toast.success(`${controlName} permission granted`);
+          break;
+          
+        default:
+          granted = true;
+      }
+      
+      // Update the control status
       setControlOptions(controlOptions.map(option => {
         if (option.id === id) {
-          return { ...option, permissionGranted: true, enabled: true };
+          return { 
+            ...option, 
+            permissionGranted: granted, 
+            enabled: granted, 
+            permissionInProgress: false 
+          };
         }
         return option;
       }));
-      toast.success('Permission granted');
-    }, 1500);
+      
+    } catch (error) {
+      console.error(`Error requesting permission for ${id}:`, error);
+      toast.error(`Failed to get permission for ${controlName}`);
+      
+      setControlOptions(controlOptions.map(option => {
+        if (option.id === id) {
+          return { ...option, permissionInProgress: false };
+        }
+        return option;
+      }));
+    }
   };
 
   // Save settings
@@ -164,13 +246,26 @@ export const BrowserControlDialog: React.FC<BrowserControlDialogProps> = ({ open
                   <div>
                     <h3 className="font-medium">{option.name}</h3>
                     <p className="text-sm text-muted-foreground">{option.description}</p>
+                    {option.id === 'screenshots' && previewImage && option.permissionGranted && (
+                      <div className="mt-2 border rounded overflow-hidden w-24 h-16">
+                        <img 
+                          src={previewImage} 
+                          alt="Screenshot preview" 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
-                <Switch 
-                  checked={option.enabled} 
-                  onCheckedChange={() => toggleControl(option.id)}
-                  disabled={option.requiresPermission && !option.permissionGranted && !option.enabled}
-                />
+                {option.permissionInProgress ? (
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                ) : (
+                  <Switch 
+                    checked={option.enabled} 
+                    onCheckedChange={() => toggleControl(option.id)}
+                    disabled={option.requiresPermission && !option.permissionGranted && !option.enabled}
+                  />
+                )}
               </div>
             ))}
           </TabsContent>

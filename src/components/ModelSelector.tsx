@@ -14,7 +14,7 @@ const ModelSelector: React.FC = () => {
   const { currentModel, setModel, AVAILABLE_MODELS } = useChat();
 
   return (
-    <div className="w-40 md:w-48">
+    <div className="w-44 md:w-56">
       <Select
         value={currentModel.id}
         onValueChange={(id) => {
@@ -23,16 +23,15 @@ const ModelSelector: React.FC = () => {
         }}
       >
         <SelectTrigger 
-          className="h-9 border-none bg-transparent hover:bg-gray-100 focus:ring-0"
+          className="h-9 border-none bg-transparent hover:bg-gray-100 focus:ring-0 text-center"
         >
-          <SelectValue className="text-center" placeholder="Select Model" />
+          <SelectValue placeholder="Select Model" />
         </SelectTrigger>
         <SelectContent>
           {AVAILABLE_MODELS.map((model) => (
             <SelectItem
               key={model.id}
               value={model.id}
-              className="text-center"
             >
               {model.name}
             </SelectItem>
