@@ -1,0 +1,44 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main  # or 'master', depending on your default branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'  # Use the latest LTS version of Node.js
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install crypto-browserify
+        run: npm install crypto-browserify
+
+      - name: Build the app
+        run: npm run build
+
+      - name: Create gh-pages branch if not exists
+        run: |
+          git fetch origin
+          if ! git rev-parse --verify gh-pages; then
+            git checkout --orphan gh-pages
+            git reset --hard
+            git commit --allow-empty -m "Initialize gh-pages branch"
+            git push origin gh-pages
+          fi
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.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 }}
+          publish_dir: ./dist 
