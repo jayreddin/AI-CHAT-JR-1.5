@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useReducer, useEffect, useState, ReactNode } from 'react';
 import { ChatContextType, ChatType } from './types';
 import { AVAILABLE_MODELS } from '@/constants/models';
@@ -85,7 +86,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isMicActive, setIsMicActive] = useState<boolean>(false);
   const [showToolbar, setShowToolbar] = useState<boolean>(false);
   const [streamingEnabled, setStreamingEnabled] = useState<boolean>(
-    loadFromStorage('streamingEnabled', false)
+    loadFromStorage('streamingEnabled', true)
   );
 
   // Save state to localStorage when it changes
@@ -195,15 +196,18 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               streamedContent += textContent;
             }
 
-            dispatch({
-              type: 'UPDATE_ASSISTANT_MESSAGE',
-              payload: {
-                messageId,
-                chatId: state.currentChat?.id || '',
-                content: streamedContent,
-                reasoningContext: isDeepSeekReasoner ? reasoningContext : undefined
-              }
-            });
+            // Update the message with the new content
+            if (streamedContent || reasoningContext) {
+              dispatch({
+                type: 'UPDATE_ASSISTANT_MESSAGE',
+                payload: {
+                  messageId,
+                  chatId: state.currentChat?.id || '',
+                  content: streamedContent || 'AI is thinking...',
+                  reasoningContext: isDeepSeekReasoner ? reasoningContext : undefined
+                }
+              });
+            }
           }
         } catch (streamError) {
           console.error("Streaming error:", streamError);
@@ -300,11 +304,16 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const index = state.currentChat.messages.findIndex((m) => m.id === messageId);
     if (index >= 0 && state.currentChat.messages[index].role === 'assistant') {
       // Find the user message that prompted this response
-      for (let i = index + 1; i < state.currentChat.messages.length; i++) {
+      let userMessage = null;
+      for (let i = index - 1; i >= 0; i--) {
         if (state.currentChat.messages[i].role === 'user') {
-          sendMessage(state.currentChat.messages[i].content);
+          userMessage = state.currentChat.messages[i];
           break;
         }
+      }
+      
+      if (userMessage) {
+        sendMessage(userMessage.content);
       }
     }
   };

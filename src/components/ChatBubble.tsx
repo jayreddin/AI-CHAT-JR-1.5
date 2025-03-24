@@ -22,7 +22,6 @@ interface ChatBubbleProps {
 
 const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
   const { deleteMessage, resendMessage, retryMessage } = useChat();
-  const [showControls, setShowControls] = useState(false);
   const isMobile = useIsMobile();
   const isUser = message.role === 'user';
   
@@ -42,11 +41,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
   };
 
   return (
-    <div
-      className={`flex mb-4 ${isUser ? 'justify-end' : 'justify-start'} message-container relative`}
-      onMouseEnter={() => setShowControls(true)}
-      onMouseLeave={() => setShowControls(false)}
-    >
+    <div className={`flex mb-8 ${isUser ? 'justify-end' : 'justify-start'} chat-message-container`}>
       <div
         className={`relative max-w-[85%] p-3 rounded-lg ${
           isUser
@@ -89,68 +84,64 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
       </div>
 
       {/* Message action buttons - positioned below the bubble */}
-      {(showControls || isMobile) && (
-        <div 
-          className={`flex mt-1 ${isUser ? 'justify-end mr-1' : 'justify-start ml-1'} gap-1`}
-        >
-          {isUser ? (
-            <>
-              <button
-                onClick={() => {/* Handle edit (placeholder) */}}
-                className="message-action-button"
-                title="Edit message"
-              >
-                <Edit size={14} />
-              </button>
-              <button
-                onClick={() => resendMessage(message.id)}
-                className="message-action-button"
-                title="Resend message"
-              >
-                <RefreshCw size={14} />
-              </button>
-              <button
-                onClick={copyMessageToClipboard}
-                className="message-action-button"
-                title="Copy message"
-              >
-                <Copy size={14} />
-              </button>
-              <button
-                onClick={() => deleteMessage(message.id)}
-                className="message-action-button"
-                title="Delete message"
-              >
-                <Trash2 size={14} />
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                onClick={() => retryMessage(message.id)}
-                className="message-action-button"
-                title="Regenerate response"
-              >
-                <RefreshCw size={14} />
-              </button>
-              <button
-                onClick={copyMessageToClipboard}
-                className="message-action-button"
-                title="Copy to clipboard"
-              >
-                <Copy size={14} />
-              </button>
-              <button
-                onClick={() => deleteMessage(message.id)}
-                className="message-action-button"
-                title="Delete message"
-              >
-                <Trash2 size={14} />
-              </button>
-            </>
-          )}
-        </div>
-      )}
+      <div className={isUser ? 'user-message-actions' : 'ai-message-actions'}>
+        {isUser ? (
+          <>
+            <button
+              onClick={() => {/* Handle edit (placeholder) */}}
+              className="message-action-button"
+              title="Edit message"
+            >
+              <Edit size={14} />
+            </button>
+            <button
+              onClick={() => resendMessage(message.id)}
+              className="message-action-button"
+              title="Resend message"
+            >
+              <RefreshCw size={14} />
+            </button>
+            <button
+              onClick={copyMessageToClipboard}
+              className="message-action-button"
+              title="Copy message"
+            >
+              <Copy size={14} />
+            </button>
+            <button
+              onClick={() => deleteMessage(message.id)}
+              className="message-action-button"
+              title="Delete message"
+            >
+              <Trash2 size={14} />
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              onClick={() => retryMessage(message.id)}
+              className="message-action-button"
+              title="Regenerate response"
+            >
+              <RefreshCw size={14} />
+            </button>
+            <button
+              onClick={copyMessageToClipboard}
+              className="message-action-button"
+              title="Copy to clipboard"
+            >
+              <Copy size={14} />
+            </button>
+            <button
+              onClick={() => deleteMessage(message.id)}
+              className="message-action-button"
+              title="Delete message"
+            >
+              <Trash2 size={14} />
+            </button>
+          </>
+        )}
+      </div>
     </div>
   );
 };

@@ -62,7 +62,7 @@ const ChatInputBox: React.FC<ChatInputBoxProps> = ({
         onChange={handleChange}
         onKeyDown={handleKeyDown}
         placeholder={isLoggedIn ? "Type @ for knowledge, ! for tools, $ for MCP servers..." : "Sign in to start chatting"}
-        className="min-h-[56px] max-h-[200px] w-full resize-none py-3 px-4 pr-20 bg-transparent outline-none text-gray-800 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+        className="min-h-[56px] max-h-[200px] w-full resize-none py-3 px-4 pr-24 bg-transparent outline-none text-gray-800 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-500"
         rows={1}
         disabled={!isLoggedIn || isStreaming}
       />
@@ -76,6 +76,7 @@ const ChatInputBox: React.FC<ChatInputBoxProps> = ({
               : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
           } transition-colors`}
           disabled={!isLoggedIn || isStreaming}
+          title="Voice input"
         >
           <Mic size={isMobile ? 16 : 18} />
         </button>
@@ -86,7 +87,7 @@ const ChatInputBox: React.FC<ChatInputBoxProps> = ({
           title="AI Assist"
           onClick={handleAIAssist}
         >
-          <Sparkles size={isMobile ? 16 : 18} />
+          <Sparkles size={isMobile ? 16 : 18} className="text-blue-500" />
         </button>
         
         <button
@@ -96,7 +97,8 @@ const ChatInputBox: React.FC<ChatInputBoxProps> = ({
               ? 'bg-primary text-white hover:bg-primary/80'
               : 'bg-blue-500 text-white hover:bg-blue-600'
           } transition-colors`}
-          disabled={isLoggedIn && !message.trim() || isStreaming}
+          disabled={isLoggedIn && (!message.trim() || isStreaming)}
+          title="Send message"
         >
           <Send size={isMobile ? 16 : 18} />
         </button>
