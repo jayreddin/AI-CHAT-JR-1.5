@@ -19,6 +19,9 @@ export default {
 			}
 		},
 		extend: {
+			spacing: {
+				'4.5': '1.125rem', // Add the 4.5 size (18px)
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
